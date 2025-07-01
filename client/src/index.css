@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pink: #FF69B4;
+  --gold: #FFD700;
+  --black: #000;
+  --white: #FFF;
+  --bg: #0f0f1a;
+  --card-bg: #1a1a2e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Playfair Display', serif;
+  color: var(--white);
+  background-color: var(--bg);
+}
+
+.bg-cosmic {
+  background: url('https://i.postimg.cc/sXdsKGTK/DALL-E-2025-06-06-14-36-29-A-vivid-ethereal-background-image-designed-for-a-psychic-reading-app.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+}
+
+.bg-cosmic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 15, 26, 0.8);
+  z-index: -1;
+}
+
+.font-alex-brush {
+  font-family: 'Alex Brush', cursive;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.text-mystical-pink {
+  color: var(--pink);
+}
+
+.text-mystical-gold {
+  color: var(--gold);
+}
+
+.bg-mystical-card {
+  background: rgba(26, 26, 46, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 105, 180, 0.2);
+}
+
+.btn-mystical {
+  background: linear-gradient(135deg, var(--pink), #FF1493);
+  border: 2px solid var(--gold);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-mystical:hover {
+  background: linear-gradient(135deg, var(--gold), #FFD700);
+  color: var(--black);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 105, 180, 0.3);
+}
+
+.card-mystical {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 105, 180, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.input-mystical {
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(255, 105, 180, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--white);
+  font-family: 'Playfair Display', serif;
+  transition: all 0.3s ease;
+}
+
+.input-mystical:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.2);
+}
+
+.input-mystical::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: 1fr;
+  }
+}
