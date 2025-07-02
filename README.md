@@ -214,37 +214,49 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key_here
 
 ## Deployment
 
-### Heroku Deployment
+### Netlify Deployment
 
-1. **Create a Heroku app**
+1. **Create a Netlify site**
    ```bash
-   heroku create your-app-name
+   # Install Netlify CLI if needed
+   npm install -g netlify-cli
+   
+   # Login to Netlify
+   netlify login
+   
+   # Initialize a new Netlify site
+   netlify init
    ```
 
 2. **Set environment variables**
    ```bash
-   heroku config:set NODE_ENV=production
-   heroku config:set MONGODB_URI=your_mongodb_connection_string
-   heroku config:set JWT_SECRET=your_jwt_secret_key
-   heroku config:set STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
-   heroku config:set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-   heroku config:set CLIENT_URL=https://your-app-name.herokuapp.com
+   # Via Netlify CLI
+   netlify env:set NODE_ENV production
+   netlify env:set MONGODB_URI your_mongodb_connection_string
+   netlify env:set JWT_SECRET your_jwt_secret_key
+   netlify env:set STRIPE_SECRET_KEY sk_live_your_stripe_secret_key
+   netlify env:set STRIPE_WEBHOOK_SECRET whsec_your_webhook_secret
+   netlify env:set CLIENT_URL https://your-app-name.netlify.app
+   
+   # Or set these in the Netlify dashboard under Site settings > Environment variables
    ```
 
-3. **Deploy to Heroku**
+3. **Deploy to Netlify**
    ```bash
-   git add .
-   git commit -m "Deploy to Heroku"
-   git push heroku main
+   # Manual deployment
+   netlify deploy --prod
+   
+   # Or connect to Git repository for automatic deployments
+   # Configure in Netlify dashboard: Site settings > Build & deploy > Continuous Deployment
    ```
 
 4. **Set up MongoDB**
    - Use MongoDB Atlas for production database
-   - Add your Heroku app's IP to MongoDB Atlas whitelist
    - Update MONGODB_URI with your Atlas connection string
+   - No IP whitelist needed as Netlify Functions use dynamic IPs
 
 5. **Configure Stripe**
-   - Set up Stripe webhooks pointing to: `https://your-app-name.herokuapp.com/api/stripe/webhook`
+   - Set up Stripe webhooks pointing to: `https://your-app-name.netlify.app/.netlify/functions/api/stripe/webhook`
    - Use production Stripe keys
    - Configure Stripe Connect for reader payouts
 

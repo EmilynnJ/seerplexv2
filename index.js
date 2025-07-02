@@ -1,3 +1,5 @@
+// This file is used for local development only
+// For production, Netlify Functions are used (see netlify/functions directory)
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -5,6 +7,9 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+
+console.log('Starting local development server...');
+console.log('Note: In production, Netlify Functions handle API requests');
 
 // Routes
 const authRoutes = require('./routes/auth');

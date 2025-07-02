@@ -11,4 +11,5 @@ dist/
 build/
 package-lock.json
 npm-shrinkwrap.json
-.npmrc
+yarn.lock
+.pnpm-lock.yaml
