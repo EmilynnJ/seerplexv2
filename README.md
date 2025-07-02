@@ -214,16 +214,52 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key_here
 
 ## Deployment
 
-### Production Environment Variables
-Update environment variables for production:
-- Use production MongoDB URI
-- Set NODE_ENV=production
-- Use production Stripe keys
-- Configure proper CORS origins
+### Heroku Deployment
 
-### Build Commands
+1. **Create a Heroku app**
+   ```bash
+   heroku create your-app-name
+   ```
+
+2. **Set environment variables**
+   ```bash
+   heroku config:set NODE_ENV=production
+   heroku config:set MONGODB_URI=your_mongodb_connection_string
+   heroku config:set JWT_SECRET=your_jwt_secret_key
+   heroku config:set STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+   heroku config:set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+   heroku config:set CLIENT_URL=https://your-app-name.herokuapp.com
+   ```
+
+3. **Deploy to Heroku**
+   ```bash
+   git add .
+   git commit -m "Deploy to Heroku"
+   git push heroku main
+   ```
+
+4. **Set up MongoDB**
+   - Use MongoDB Atlas for production database
+   - Add your Heroku app's IP to MongoDB Atlas whitelist
+   - Update MONGODB_URI with your Atlas connection string
+
+5. **Configure Stripe**
+   - Set up Stripe webhooks pointing to: `https://your-app-name.herokuapp.com/api/stripe/webhook`
+   - Use production Stripe keys
+   - Configure Stripe Connect for reader payouts
+
+### Local Development
 ```bash
-# Build client for production
+# Install dependencies
+npm run install-all
+
+# Start development servers
+npm run dev
+```
+
+### Production Build
+```bash
+# Build for production
 npm run build
 
 # Start production server
