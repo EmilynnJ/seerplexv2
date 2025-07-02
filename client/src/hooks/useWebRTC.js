@@ -24,7 +24,7 @@ export const useWebRTC = (sessionId, userRole, readerRate) => {
   const initializeWebRTC = async () => {
     try {
       // Initialize Socket.IO
-      socketRef.current = io('http://localhost:4000');
+      socketRef.current = io(import.meta.env.VITE_SERVER_URL);
       
       // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({
