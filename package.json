@@ -10,7 +10,8 @@
     "install-deps": "npm install && cd client && npm install && cd ../server && npm install"
   },
   "devDependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "vite": "^7.0.0"
   },
   "dependencies": {
     "mongodb": "^6.17.0"
