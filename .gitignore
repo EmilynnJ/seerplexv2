@@ -10,4 +10,5 @@ yarn-error.log*
 dist/
 build/
 package-lock.json
+npm-shrinkwrap.json
 .npmrc
