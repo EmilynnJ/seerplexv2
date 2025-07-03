@@ -14,7 +14,6 @@ import LiveStream from './pages/LiveStream';
 import Shop from './pages/Shop';
 import Community from './pages/Community';
 import Messages from './pages/Messages';
-import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import HelpCenter from './pages/HelpCenter';
 import Policies from './pages/Policies';
