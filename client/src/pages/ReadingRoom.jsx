@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-react';
 import { useWebRTC } from '../hooks/useWebRTC';
 import VideoCall from '../components/VideoCall';
 import ChatBox from '../components/ChatBox';
@@ -10,8 +10,18 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const ReadingRoom = () => {
   const { sessionId } = useParams();
-  const { user } = useAuth();
-  
+  const { user, isLoaded, isSignedIn } = useUser();
+
+  if (!isLoaded) {
+    return <LoadingSpinner text="Loading user data..." />;
+  }
+
+  if (!isSignedIn || !user) {
+    return <div>Please sign in to access the reading room.</div>;
+  }
+
+  const userRole = user.publicMetadata?.role;
+
   const {
     localStream,
     remoteStream,
@@ -23,7 +33,7 @@ const ReadingRoom = () => {
     toggleVideo,
     toggleAudio,
     endSession
-  } = useWebRTC(sessionId, user?.role, 3.99); // Default rate
+  } = useWebRTC(sessionId, userRole, 3.99); // Default rate
 
   if (connectionStatus === 'connecting') {
     return <LoadingSpinner text="Connecting to your reading..." />;
@@ -110,7 +120,7 @@ const ReadingRoom = () => {
             />
             
             {/* Balance Indicator */}
-            {user?.role === 'client' && (
+            {userRole === 'client' && (
               <BalanceIndicator 
                 balance={balance}
                 readerRate={3.99}
@@ -130,4 +140,3 @@ const ReadingRoom = () => {
   );
 };
 
-export default ReadingRoom;

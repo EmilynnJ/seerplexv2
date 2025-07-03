@@ -1,7 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -20,7 +19,6 @@ import Profile from './pages/Profile';
 import HelpCenter from './pages/HelpCenter';
 import Policies from './pages/Policies';
 import Unauthorized from './pages/Unauthorized';
-import LoadingSpinner from './components/LoadingSpinner';
 // Role-specific dashboard pages
 import AdminDashboard from './pages/dashboard/admin';
 import ReaderDashboard from './pages/dashboard/reader';
@@ -28,18 +26,18 @@ import ClientDashboard from './pages/dashboard/client';
 
 // Component to handle role-based redirects after login
 const RoleBasedRedirect = () => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <LoadingSpinner />;
+  const { user, isLoaded, isSignedIn } = useUser();
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
   }
-  
-  if (!user) {
+
+  if (!isSignedIn || !user) {
     return <Navigate to="/login" replace />;
   }
-  
-  const role = user.role;
-  
+
+  const role = user.publicMetadata?.role;
+
   if (role === 'admin') {
     return <Navigate to="/dashboard/admin" replace />;
   } else if (role === 'reader') {

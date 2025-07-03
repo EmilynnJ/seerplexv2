@@ -1,30 +1,27 @@
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Navigate, useLocation } from 'react-router-dom';
-import { UserRole } from '../types/auth';
-import LoadingSpinner from './LoadingSpinner';
+import { useUser, RedirectToSignIn } from '@clerk/clerk-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles: UserRole[];
+  allowedRoles?: string[];
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-  const location = useLocation();
+  const { isSignedIn, isLoaded, user } = useUser();
 
-  if (loading) {
-    return <LoadingSpinner />;
+  if (!isLoaded) {
+    return <div>Loading...</div>;
   }
 
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isSignedIn) {
+    return <RedirectToSignIn />;
   }
 
-  const userRole = user.role as UserRole;
-  
-  if (!userRole || !allowedRoles.includes(userRole)) {
-    return <Navigate to="/unauthorized" replace />;
+  if (allowedRoles && user) {
+    const userRole = user.publicMetadata?.role;
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return <div>Unauthorized</div>;
+    }
   }
 
   return <>{children}</>;
