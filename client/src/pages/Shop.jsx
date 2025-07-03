@@ -1,9 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Shop = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('/api/products'); // Assuming this endpoint exists
+      setProducts(response.data.products || response.data); // Adjust based on actual API response shape
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
     { id: 'all', name: 'All Products' },
@@ -13,170 +32,23 @@ const Shop = () => {
     { id: 'courses', name: 'Courses' }
   ];
 
-  const products = [
-    // Reading Services
-    {
-      id: 1,
-      category: 'services',
-      name: 'Premium Tarot Reading',
-      description: '60-minute in-depth tarot reading with detailed insights',
-      price: 75.00,
-      image: '🔮',
-      type: 'Service',
-      featured: true
-    },
-    {
-      id: 2,
-      category: 'services',
-      name: 'Past Life Reading',
-      description: 'Explore your past lives and karmic connections',
-      price: 85.00,
-      image: '👁️',
-      type: 'Service'
-    },
-    {
-      id: 3,
-      category: 'services',
-      name: 'Relationship Reading',
-      description: 'Get clarity on love and relationship matters',
-      price: 65.00,
-      image: '💕',
-      type: 'Service'
-    },
-    {
-      id: 4,
-      category: 'services',
-      name: 'Career Guidance Reading',
-      description: 'Find your path and purpose in your career',
-      price: 70.00,
-      image: '🌟',
-      type: 'Service'
-    },
-
-    // Digital Products
-    {
-      id: 5,
-      category: 'digital',
-      name: 'Crystal Healing Guide',
-      description: 'Complete digital guide to crystal properties and healing',
-      price: 19.99,
-      image: '💎',
-      type: 'Digital Download',
-      featured: true
-    },
-    {
-      id: 6,
-      category: 'digital',
-      name: 'Tarot Spreads Collection',
-      description: '50+ unique tarot spreads for every situation',
-      price: 14.99,
-      image: '🃏',
-      type: 'Digital Download'
-    },
-    {
-      id: 7,
-      category: 'digital',
-      name: 'Meditation Audio Pack',
-      description: 'Guided meditations for spiritual awakening',
-      price: 24.99,
-      image: '🧘‍♀️',
-      type: 'Digital Audio'
-    },
-    {
-      id: 8,
-      category: 'digital',
-      name: 'Astrology Birth Chart Guide',
-      description: 'Learn to read and interpret birth charts',
-      price: 29.99,
-      image: '♈',
-      type: 'Digital Download'
-    },
-
-    // Physical Products
-    {
-      id: 9,
-      category: 'physical',
-      name: 'Professional Tarot Deck',
-      description: 'Premium Rider-Waite tarot deck with guidebook',
-      price: 34.99,
-      image: '🎴',
-      type: 'Physical Product',
-      featured: true
-    },
-    {
-      id: 10,
-      category: 'physical',
-      name: 'Sage Cleansing Bundle',
-      description: 'White sage bundle for spiritual cleansing',
-      price: 15.99,
-      image: '🌿',
-      type: 'Physical Product'
-    },
-    {
-      id: 11,
-      category: 'physical',
-      name: 'Crystal Starter Set',
-      description: 'Seven essential healing crystals with velvet pouch',
-      price: 42.99,
-      image: '💠',
-      type: 'Physical Product'
-    },
-    {
-      id: 12,
-      category: 'physical',
-      name: 'Incense Variety Pack',
-      description: 'Spiritual incense collection - 12 different scents',
-      price: 18.99,
-      image: '🕯️',
-      type: 'Physical Product'
-    },
-
-    // Courses
-    {
-      id: 13,
-      category: 'courses',
-      name: 'Tarot Reading Mastery',
-      description: 'Complete 8-week course on professional tarot reading',
-      price: 197.00,
-      image: '📚',
-      type: 'Online Course',
-      featured: true
-    },
-    {
-      id: 14,
-      category: 'courses',
-      name: 'Psychic Development Program',
-      description: 'Develop your natural psychic abilities',
-      price: 247.00,
-      image: '🔮',
-      type: 'Online Course'
-    },
-    {
-      id: 15,
-      category: 'courses',
-      name: 'Crystal Healing Certification',
-      description: 'Become a certified crystal healing practitioner',
-      price: 297.00,
-      image: '💎',
-      type: 'Online Course'
-    }
-  ];
-
   const filteredProducts = activeCategory === 'all'
     ? products
     : products.filter(product => product.category === activeCategory);
 
-  const featuredProducts = products.filter(product => product.featured);
+  const featuredProducts = Array.isArray(products) ? products.filter(product => product.featured) : [];
 
   const handleAddToCart = (product) => {
-    // TODO: Implement cart functionality
-    alert(`Added ${product.name} to cart!`);
+    console.log(`Added ${product.name} to cart!`);
   };
 
   const handleBuyNow = (product) => {
-    // TODO: Implement direct purchase
-    alert(`Redirecting to checkout for ${product.name}`);
+    console.log(`Redirecting to checkout for ${product.name}`);
   };
+
+  if (loading) {
+    return <LoadingSpinner text="Loading shop..." />;
+  }
 
   return (
     <div className="min-h-screen py-8">
@@ -197,15 +69,15 @@ const Shop = () => {
             Featured Products
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredProducts.map((product) => (
+            {Array.isArray(featuredProducts) && featuredProducts.map((product) => (
               <div key={product.id} className="card-mystical relative">
                 <div className="absolute top-4 right-4 bg-mystical-gold text-black px-2 py-1 rounded text-sm font-semibold">
                   Featured
                 </div>
                 <div className="text-center mb-4">
-                  <div className="text-6xl mb-4">{product.image}</div>
+                  <div className="text-6xl mb-4">{product.image || '✨'}</div> {/* Fallback image */}
                   <span className="bg-mystical-pink text-white px-3 py-1 rounded-full text-sm">
-                    {product.type}
+                    {product.type || 'Product'}
                   </span>
                 </div>
                 <h3 className="font-playfair text-xl text-white font-semibold mb-2">
@@ -216,7 +88,7 @@ const Shop = () => {
                 </p>
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-alex-brush text-2xl text-mystical-gold">
-                    ${product.price}
+                    ${product.price?.toFixed(2) || '0.00'}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -257,12 +129,12 @@ const Shop = () => {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {filteredProducts.map((product) => (
+          {Array.isArray(filteredProducts) && filteredProducts.map((product) => (
             <div key={product.id} className="card-mystical">
               <div className="text-center mb-4">
-                <div className="text-4xl mb-3">{product.image}</div>
+                <div className="text-4xl mb-3">{product.image || '✨'}</div> {/* Fallback image */}
                 <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs">
-                  {product.type}
+                  {product.type || 'Product'}
                 </span>
               </div>
               <h3 className="font-playfair text-lg text-white font-semibold mb-2">
@@ -273,7 +145,7 @@ const Shop = () => {
               </p>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-alex-brush text-xl text-mystical-gold">
-                  ${product.price}
+                  ${product.price?.toFixed(2) || '0.00'}
                 </span>
               </div>
               <div className="flex flex-col gap-2">

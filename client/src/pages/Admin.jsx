@@ -40,8 +40,8 @@ const Admin = () => {
         axios.get('/api/admin/sessions')
       ]);
       
-      setReaders(readersRes.data);
-      setSessions(sessionsRes.data);
+      setReaders(readersRes.data.readers);
+      setSessions(sessionsRes.data.sessions);
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
@@ -411,7 +411,7 @@ const Admin = () => {
               <div className="card-mystical text-center">
                 <h3 className="font-playfair text-xl text-mystical-pink mb-2">Active Readers</h3>
                 <p className="font-alex-brush text-3xl text-white">
-                  {readers.filter(r => r.isActive).length}
+                  {Array.isArray(readers) && readers.filter(r => r.isActive).length}
                 </p>
               </div>
               <div className="card-mystical text-center">

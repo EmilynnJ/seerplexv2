@@ -8,6 +8,7 @@ import axios from 'axios';
 const Home = () => {
   const [readers, setReaders] = useState([]);
   const [liveStreams, setLiveStreams] = useState([]);
+  const [products, setProducts] = useState([]);          // Added products state
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -17,13 +18,15 @@ const Home = () => {
 
   const fetchHomeData = async () => {
     try {
-      const [readersRes, streamsRes] = await Promise.all([
+      const [readersRes, streamsRes, productsRes] = await Promise.all([
         axios.get('/api/users/readers'),
-        axios.get('/api/streams/live')
+        axios.get('/api/streams/live'),
+        axios.get('/api/products')
       ]);
       
-      setReaders(readersRes.data);
-      setLiveStreams(streamsRes.data);
+      setReaders(readersRes.data.readers);
+      setLiveStreams(streamsRes.data.streams || streamsRes.data);
+      setProducts(productsRes.data.products || productsRes.data);
     } catch (error) {
       console.error('Failed to fetch home data:', error);
     } finally {
@@ -61,7 +64,7 @@ const Home = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {readers.filter(reader => reader.isOnline).map((reader) => (
+            {Array.isArray(readers) && readers.filter(reader => reader.isOnline).map((reader) => (
               <ReaderCard
                 key={reader.id}
                 reader={reader}
@@ -70,7 +73,7 @@ const Home = () => {
             ))}
           </div>
           
-          {readers.filter(reader => reader.isOnline).length === 0 && (
+          {Array.isArray(readers) && readers.filter(reader => reader.isOnline).length === 0 && (
             <div className="text-center py-12">
               <p className="font-playfair text-gray-300 text-lg">
                 No readers are currently online. Check back soon!
@@ -103,7 +106,7 @@ const Home = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {liveStreams.map((stream) => (
+            {Array.isArray(liveStreams) && liveStreams.map((stream) => (
               <div key={stream.id} className="card-mystical cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
                    onClick={() => navigate(`/livestream`)}>
                 <div className="flex items-center justify-between mb-4">
@@ -132,7 +135,7 @@ const Home = () => {
             ))}
           </div>
           
-          {liveStreams.length === 0 && (
+          {Array.isArray(liveStreams) && liveStreams.length === 0 && (
             <div className="text-center py-12">
               <p className="font-playfair text-gray-300 text-lg">
                 No live streams at the moment. Check back soon!
@@ -156,41 +159,16 @@ const Home = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="card-mystical text-center">
-              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">🔮</span>
+            {Array.isArray(products) && products.filter(product => product.featured).map((product) => (
+              <div key={product.id} className="card-mystical text-center">
+                <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-2xl">{product.image || '✨'}</span> {/* Fallback image */}
+                </div>
+                <h3 className="font-playfair text-xl text-white font-semibold mb-2">{product.name}</h3>
+                <p className="font-playfair text-gray-300 text-sm mb-4">{product.description}</p>
+                <span className="font-playfair text-mystical-gold font-semibold">${product.price?.toFixed(2) || '0.00'}</span>
               </div>
-              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Crystal Readings Guide</h3>
-              <p className="font-playfair text-gray-300 text-sm mb-4">Digital guide to crystal healing and readings</p>
-              <span className="font-playfair text-mystical-gold font-semibold">$9.99</span>
-            </div>
-            
-            <div className="card-mystical text-center">
-              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">🃏</span>
-              </div>
-              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Tarot Deck Set</h3>
-              <p className="font-playfair text-gray-300 text-sm mb-4">Premium tarot cards with guidebook</p>
-              <span className="font-playfair text-mystical-gold font-semibold">$24.99</span>
-            </div>
-            
-            <div className="card-mystical text-center">
-              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">🧘‍♀️</span>
-              </div>
-              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Meditation Audio</h3>
-              <p className="font-playfair text-gray-300 text-sm mb-4">Guided spiritual meditation sessions</p>
-              <span className="font-playfair text-mystical-gold font-semibold">$14.99</span>
-            </div>
-            
-            <div className="card-mystical text-center">
-              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">✨</span>
-              </div>
-              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Sage Bundle</h3>
-              <p className="font-playfair text-gray-300 text-sm mb-4">Cleansing sage for spiritual practice</p>
-              <span className="font-playfair text-mystical-gold font-semibold">$12.99</span>
-            </div>
+            ))}
           </div>
           
           <div className="text-center mt-8">

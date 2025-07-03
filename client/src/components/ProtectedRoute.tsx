@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { UserRole } from '../types/auth';
 import LoadingSpinner from './LoadingSpinner';
@@ -10,10 +10,10 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { isLoaded, user } = useUser();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (!isLoaded) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
@@ -21,7 +21,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const userRole = user.publicMetadata.role as UserRole;
+  const userRole = user.role as UserRole;
   
   if (!userRole || !allowedRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" replace />;

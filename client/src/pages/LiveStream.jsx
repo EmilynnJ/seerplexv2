@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const LiveStream = () => {
@@ -7,125 +8,41 @@ const LiveStream = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('live');
-
-  // Mock data for live streams
-  const liveStreams = [
-    {
-      id: 1,
-      title: "Daily Tarot Guidance",
-      readerName: "Mystic Luna",
-      readerAvatar: "🌙",
-      viewers: 142,
-      duration: "32:45",
-      category: "Tarot",
-      description: "Join Luna for daily tarot insights and guidance for your spiritual journey",
-      thumbnail: "🔮",
-      isLive: true
-    },
-    {
-      id: 2,
-      title: "Crystal Healing Session",
-      readerName: "Crystal Rose",
-      readerAvatar: "🌹",
-      viewers: 89,
-      duration: "18:22",
-      category: "Crystal Healing",
-      description: "Experience the healing power of crystals in this interactive session",
-      thumbnail: "💎",
-      isLive: true
-    },
-    {
-      id: 3,
-      title: "Astrology Weekly Forecast",
-      readerName: "Star Walker",
-      readerAvatar: "⭐",
-      viewers: 203,
-      duration: "45:12",
-      category: "Astrology",
-      description: "Get insights into this week's planetary movements and their effects",
-      thumbnail: "♈",
-      isLive: true
-    }
-  ];
-
-  const upcomingStreams = [
-    {
-      id: 4,
-      title: "Past Life Regression Journey",
-      readerName: "Soul Guide Maya",
-      readerAvatar: "👁️",
-      scheduledTime: "Today at 8:00 PM",
-      category: "Past Life",
-      description: "Guided meditation to explore your past lives and soul connections",
-      thumbnail: "🌀"
-    },
-    {
-      id: 5,
-      title: "Full Moon Manifestation",
-      readerName: "Moon Priestess",
-      readerAvatar: "🌕",
-      scheduledTime: "Tomorrow at 9:00 PM",
-      category: "Manifestation",
-      description: "Harness the power of the full moon for manifestation and release",
-      thumbnail: "🌕"
-    },
-    {
-      id: 6,
-      title: "Psychic Development Circle",
-      readerName: "Intuitive Oracle",
-      readerAvatar: "🔮",
-      scheduledTime: "Saturday at 7:00 PM",
-      category: "Development",
-      description: "Learn to develop and trust your psychic abilities in this group session",
-      thumbnail: "✨"
-    }
-  ];
-
-  const featuredStreams = [
-    {
-      id: 7,
-      title: "Master Class: Advanced Tarot",
-      readerName: "Tarot Master Elena",
-      readerAvatar: "👑",
-      views: 1247,
-      category: "Education",
-      description: "Deep dive into advanced tarot techniques and card combinations",
-      thumbnail: "🎴",
-      isPremium: true
-    },
-    {
-      id: 8,
-      title: "Healing Circle for Grief",
-      readerName: "Compassionate Heart",
-      readerAvatar: "💚",
-      views: 892,
-      category: "Healing",
-      description: "A safe space for processing grief and finding comfort through spirit",
-      thumbnail: "🕯️",
-      isPremium: false
-    }
-  ];
+  const [liveStreams, setLiveStreams] = useState([]);
+  const [upcomingStreams, setUpcomingStreams] = useState([]);
+  const [featuredStreams, setFeaturedStreams] = useState([]);
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    fetchStreamsData();
   }, [streamId]);
 
+  const fetchStreamsData = async () => {
+    try {
+      const [liveRes, upcomingRes, featuredRes] = await Promise.all([
+        axios.get('/api/streams/live'),
+        axios.get('/api/streams/upcoming'),
+        axios.get('/api/streams/featured')
+      ]);
+      setLiveStreams(liveRes.data.streams || liveRes.data);
+      setUpcomingStreams(upcomingRes.data.streams || upcomingRes.data);
+      setFeaturedStreams(featuredRes.data.streams || featuredRes.data);
+    } catch (error) {
+      console.error('Failed to fetch stream data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleJoinStream = (stream) => {
-    // TODO: Implement actual stream joining logic
-    alert(`Joining ${stream.title} by ${stream.readerName}`);
+    console.log(`Joining ${stream.title} by ${stream.readerName}`);
   };
 
   const handleSetReminder = (stream) => {
-    // TODO: Implement reminder functionality
-    alert(`Reminder set for ${stream.title}`);
+    console.log(`Reminder set for ${stream.title}`);
   };
 
   const handleSendGift = (stream) => {
-    // TODO: Implement gift sending
-    alert(`Send a gift to ${stream.readerName}`);
+    console.log(`Send a gift to ${stream.readerName}`);
   };
 
   if (loading) {
@@ -194,7 +111,7 @@ const LiveStream = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {liveStreams.map((stream) => (
+              {Array.isArray(liveStreams) && liveStreams.map((stream) => (
                 <div key={stream.id} className="card-mystical relative overflow-hidden">
                   {/* Live Badge */}
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1 z-10">
@@ -204,14 +121,14 @@ const LiveStream = () => {
                   
                   {/* Duration Badge */}
                   <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                    {stream.duration}
+                    {stream.duration || '00:00'}
                   </div>
 
                   {/* Thumbnail */}
                   <div className="text-center mb-4 bg-gray-800 rounded-lg p-8">
-                    <div className="text-6xl mb-2">{stream.thumbnail}</div>
+                    <div className="text-6xl mb-2">{stream.thumbnail || '✨'}</div>
                     <span className="bg-mystical-pink text-white px-3 py-1 rounded-full text-sm">
-                      {stream.category}
+                      {stream.category || 'General'}
                     </span>
                   </div>
 
@@ -222,8 +139,8 @@ const LiveStream = () => {
                     </h3>
                     
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{stream.readerAvatar}</span>
-                      <span className="font-playfair text-gray-300">{stream.readerName}</span>
+                      <span className="text-2xl">{stream.readerAvatar || '👤'}</span>
+                      <span className="font-playfair text-gray-300">{stream.readerName || 'Unknown Reader'}</span>
                     </div>
                     
                     <p className="font-playfair text-gray-300 text-sm">
@@ -233,7 +150,7 @@ const LiveStream = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-playfair text-mystical-gold flex items-center space-x-1">
                         <span>👥</span>
-                        <span>{stream.viewers} viewers</span>
+                        <span>{stream.viewers || 0} viewers</span>
                       </span>
                     </div>
                     
@@ -266,13 +183,13 @@ const LiveStream = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {upcomingStreams.map((stream) => (
+              {Array.isArray(upcomingStreams) && upcomingStreams.map((stream) => (
                 <div key={stream.id} className="card-mystical">
                   {/* Thumbnail */}
                   <div className="text-center mb-4 bg-gray-800 rounded-lg p-8">
-                    <div className="text-6xl mb-2">{stream.thumbnail}</div>
+                    <div className="text-6xl mb-2">{stream.thumbnail || '✨'}</div>
                     <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm">
-                      {stream.category}
+                      {stream.category || 'General'}
                     </span>
                   </div>
 
@@ -283,8 +200,8 @@ const LiveStream = () => {
                     </h3>
                     
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{stream.readerAvatar}</span>
-                      <span className="font-playfair text-gray-300">{stream.readerName}</span>
+                      <span className="text-2xl">{stream.readerAvatar || '👤'}</span>
+                      <span className="font-playfair text-gray-300">{stream.readerName || 'Unknown Reader'}</span>
                     </div>
                     
                     <p className="font-playfair text-gray-300 text-sm">
@@ -294,7 +211,7 @@ const LiveStream = () => {
                     <div className="bg-gray-800 bg-opacity-50 rounded-lg p-3">
                       <span className="font-playfair text-mystical-gold text-sm flex items-center space-x-1">
                         <span>⏰</span>
-                        <span>{stream.scheduledTime}</span>
+                        <span>{stream.scheduledTime || 'N/A'}</span>
                       </span>
                     </div>
                     
@@ -319,7 +236,7 @@ const LiveStream = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-              {featuredStreams.map((stream) => (
+              {Array.isArray(featuredStreams) && featuredStreams.map((stream) => (
                 <div key={stream.id} className="card-mystical relative">
                   {stream.isPremium && (
                     <div className="absolute top-4 right-4 bg-mystical-gold text-black px-3 py-1 rounded-full text-sm font-semibold">
@@ -329,9 +246,9 @@ const LiveStream = () => {
 
                   {/* Thumbnail */}
                   <div className="text-center mb-4 bg-gray-800 rounded-lg p-8">
-                    <div className="text-6xl mb-2">{stream.thumbnail}</div>
+                    <div className="text-6xl mb-2">{stream.thumbnail || '✨'}</div>
                     <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
-                      {stream.category}
+                      {stream.category || 'General'}
                     </span>
                   </div>
 
@@ -342,8 +259,8 @@ const LiveStream = () => {
                     </h3>
                     
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{stream.readerAvatar}</span>
-                      <span className="font-playfair text-gray-300">{stream.readerName}</span>
+                      <span className="text-2xl">{stream.readerAvatar || '👤'}</span>
+                      <span className="font-playfair text-gray-300">{stream.readerName || 'Unknown Reader'}</span>
                     </div>
                     
                     <p className="font-playfair text-gray-300 text-sm">
@@ -353,7 +270,7 @@ const LiveStream = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-playfair text-mystical-gold flex items-center space-x-1">
                         <span>👁️</span>
-                        <span>{stream.views} views</span>
+                        <span>{stream.views || 0} views</span>
                       </span>
                     </div>
                     

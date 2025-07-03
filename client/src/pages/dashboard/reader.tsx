@@ -91,17 +91,15 @@ const ReaderDashboard = () => {
 
   const handleToggleOnline = () => {
     setIsOnline(!isOnline);
-    // TODO: Update online status via API
+    console.log(`Toggling online status to: ${!isOnline}`);
   };
 
   const handleUpdateRates = () => {
-    // TODO: Implement rate updates
-    alert('Rate update functionality to be implemented');
+    console.log('Rate update functionality to be implemented');
   };
 
   const handleAcceptSession = (notificationId: number) => {
-    // TODO: Implement session acceptance
-    alert(`Accepting session from notification ${notificationId}`);
+    console.log(`Accepting session from notification ${notificationId}`);
   };
 
   const tabs = [

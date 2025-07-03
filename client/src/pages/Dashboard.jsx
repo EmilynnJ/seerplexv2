@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ReaderCard from '../components/ReaderCard';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -31,7 +31,7 @@ const Dashboard = () => {
         ]);
         
         setData({
-          readers: readersRes.data,
+          readers: readersRes.data.readers,
           sessions: sessionsRes.data.sessions,
           balance: user.balance || 0
         });
@@ -129,7 +129,7 @@ const Dashboard = () => {
               Available Readers
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.readers.filter(reader => reader.isOnline).map((reader) => (
+              {Array.isArray(data.readers) && data.readers.filter(reader => reader.isOnline).map((reader) => (
                 <ReaderCard
                   key={reader.id}
                   reader={reader}
@@ -235,7 +235,7 @@ const Dashboard = () => {
             <div className="card-mystical">
               <h3 className="font-playfair text-xl text-mystical-pink mb-2">Sessions Today</h3>
               <p className="font-alex-brush text-3xl text-white">
-                {data.sessions.filter(s => 
+                {Array.isArray(data.sessions) && data.sessions.filter(s =>
                   new Date(s.createdAt).toDateString() === new Date().toDateString()
                 ).length}
               </p>
@@ -278,7 +278,7 @@ const Dashboard = () => {
               Recent Sessions
             </h2>
             <div className="card-mystical">
-              {data.sessions.length > 0 ? (
+              {Array.isArray(data.sessions) && data.sessions.length > 0 ? (
                 <div className="space-y-4">
                   {data.sessions.slice(0, 5).map((session) => (
                     <div key={session._id} className="flex items-center justify-between p-4 bg-gray-800 bg-opacity-50 rounded-lg">

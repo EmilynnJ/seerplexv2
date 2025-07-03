@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from './contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Header from './components/Header';
@@ -10,7 +10,7 @@ import About from './pages/About';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ReadingRoom from './pages/ReadingRoom';
-import Dashboard from './pages/Dashboard';
+import ReadersPage from './pages/ReadersPage';
 import LiveStream from './pages/LiveStream';
 import Shop from './pages/Shop';
 import Community from './pages/Community';
@@ -28,9 +28,9 @@ import ClientDashboard from './pages/dashboard/client';
 
 // Component to handle role-based redirects after login
 const RoleBasedRedirect = () => {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   
-  if (!isLoaded) {
+  if (loading) {
     return <LoadingSpinner />;
   }
   
@@ -38,7 +38,7 @@ const RoleBasedRedirect = () => {
     return <Navigate to="/login" replace />;
   }
   
-  const role = user.publicMetadata.role;
+  const role = user.role;
   
   if (role === 'admin') {
     return <Navigate to="/dashboard/admin" replace />;
@@ -64,7 +64,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/readers" element={<Dashboard />} />
+            <Route path="/readers" element={<ReadersPage />} />
             <Route path="/livestream" element={<LiveStream />} />
             <Route path="/live/:streamId?" element={<LiveStream />} />
             <Route path="/shop" element={<Shop />} />

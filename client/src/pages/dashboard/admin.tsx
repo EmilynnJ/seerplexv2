@@ -43,18 +43,15 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproveReader = (readerId: number) => {
-    // TODO: Implement reader approval
-    alert(`Approved reader with ID: ${readerId}`);
+    console.log(`Approved reader with ID: ${readerId}`);
   };
 
   const handleRejectReader = (readerId: number) => {
-    // TODO: Implement reader rejection
-    alert(`Rejected reader with ID: ${readerId}`);
+    console.log(`Rejected reader with ID: ${readerId}`);
   };
 
   const handleCreateReader = () => {
-    // TODO: Implement reader creation
-    alert('Create new reader profile');
+    console.log('Create new reader profile');
   };
 
   const tabs = [

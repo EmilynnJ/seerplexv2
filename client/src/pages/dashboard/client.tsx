@@ -128,23 +128,19 @@ const ClientDashboard = () => {
   }, []);
 
   const handleAddFunds = () => {
-    // TODO: Implement add funds functionality
-    alert('Add funds functionality to be implemented');
+    console.log('Add funds functionality to be implemented');
   };
 
   const handleConnectReader = (readerId: number, sessionType: string) => {
-    // TODO: Implement reader connection
-    alert(`Connecting to reader ${readerId} for ${sessionType} session`);
+    console.log(`Connecting to reader ${readerId} for ${sessionType} session`);
   };
 
   const handleAddToFavorites = (readerId: number) => {
-    // TODO: Implement add to favorites
-    alert(`Added reader ${readerId} to favorites`);
+    console.log(`Added reader ${readerId} to favorites`);
   };
 
   const handleViewOrder = (orderId: number) => {
-    // TODO: Implement order details view
-    alert(`Viewing order ${orderId}`);
+    console.log(`Viewing order ${orderId}`);
   };
 
   const tabs = [

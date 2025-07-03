@@ -1,152 +1,85 @@
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Messages = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeChat, setActiveChat] = useState(null);
+  const [activeConversationId, setActiveConversationId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
-  // Mock data - replace with actual API calls
-  useEffect(() => {
-    setConversations([
-      {
-        id: 1,
-        participantName: "Mystic Luna",
-        participantAvatar: "🌙",
-        participantRole: "reader",
-        lastMessage: "Thank you for the wonderful session! Feel free to reach out if you have any follow-up questions.",
-        lastMessageTime: "2024-01-15T16:30:00Z",
-        unreadCount: 0,
-        isOnline: true
-      },
-      {
-        id: 2,
-        participantName: "Crystal Rose",
-        participantAvatar: "🌹",
-        participantRole: "reader",
-        lastMessage: "I'm available for a reading today if you'd like to continue our conversation about your career path.",
-        lastMessageTime: "2024-01-15T14:20:00Z",
-        unreadCount: 2,
-        isOnline: false
-      },
-      {
-        id: 3,
-        participantName: "SoulSeer Support",
-        participantAvatar: "💬",
-        participantRole: "admin",
-        lastMessage: "Your recent order has been processed and will be shipped within 2-3 business days.",
-        lastMessageTime: "2024-01-14T11:45:00Z",
-        unreadCount: 0,
-        isOnline: true
-      }
-    ]);
+  const fetchConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/messages/conversations');
+      setConversations(response.data.conversations);
+    } catch (error) {
+      console.error('Failed to fetch conversations:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (activeChat) {
-      // Mock messages for the active chat
-      const mockMessages = {
-        1: [
-          {
-            id: 1,
-            senderId: 1,
-            senderName: "Mystic Luna",
-            content: "Hello! I hope you're doing well after our reading yesterday.",
-            timestamp: "2024-01-15T15:30:00Z",
-            isFromCurrentUser: false
-          },
-          {
-            id: 2,
-            senderId: user?.id,
-            senderName: user?.firstName || "You",
-            content: "Hi Luna! Yes, everything you said really resonated with me. Thank you so much!",
-            timestamp: "2024-01-15T15:45:00Z",
-            isFromCurrentUser: true
-          },
-          {
-            id: 3,
-            senderId: 1,
-            senderName: "Mystic Luna",
-            content: "I'm so glad to hear that! Remember what we discussed about trusting your intuition - you have more power than you realize.",
-            timestamp: "2024-01-15T16:00:00Z",
-            isFromCurrentUser: false
-          },
-          {
-            id: 4,
-            senderId: 1,
-            senderName: "Mystic Luna",
-            content: "Thank you for the wonderful session! Feel free to reach out if you have any follow-up questions.",
-            timestamp: "2024-01-15T16:30:00Z",
-            isFromCurrentUser: false
-          }
-        ],
-        2: [
-          {
-            id: 1,
-            senderId: 2,
-            senderName: "Crystal Rose",
-            content: "Hi there! I wanted to follow up on our discussion about career changes.",
-            timestamp: "2024-01-15T14:00:00Z",
-            isFromCurrentUser: false
-          },
-          {
-            id: 2,
-            senderId: 2,
-            senderName: "Crystal Rose",
-            content: "I'm available for a reading today if you'd like to continue our conversation about your career path.",
-            timestamp: "2024-01-15T14:20:00Z",
-            isFromCurrentUser: false
-          }
-        ],
-        3: [
-          {
-            id: 1,
-            senderId: 'admin',
-            senderName: "SoulSeer Support",
-            content: "Thank you for your recent purchase! Your order #12345 has been confirmed.",
-            timestamp: "2024-01-14T11:30:00Z",
-            isFromCurrentUser: false
-          },
-          {
-            id: 2,
-            senderId: 'admin',
-            senderName: "SoulSeer Support",
-            content: "Your recent order has been processed and will be shipped within 2-3 business days.",
-            timestamp: "2024-01-14T11:45:00Z",
-            isFromCurrentUser: false
-          }
-        ]
-      };
-      
-      setMessages(mockMessages[activeChat] || []);
-    }
-  }, [activeChat, user]);
+    fetchConversations();
+  }, [fetchConversations]);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !activeChat) return;
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeConversationId) return;
 
-    const message = {
-      id: messages.length + 1,
-      senderId: user?.id,
-      senderName: user?.firstName || "You",
-      content: newMessage,
-      timestamp: new Date().toISOString(),
-      isFromCurrentUser: true
+      try {
+        setLoadingMessages(true);
+        const response = await axios.get(`/api/messages/conversation/${activeConversationId}`);
+        setMessages(response.data.messages);
+      } catch (error) {
+        console.error(`Failed to fetch messages for ${activeConversationId}:`, error);
+      } finally {
+        setLoadingMessages(false);
+      }
     };
 
-    setMessages([...messages, message]);
-    setNewMessage('');
-    
-    // TODO: Send message via API
+    fetchMessages();
+  }, [activeConversationId]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeConversationId) return;
+
+    const activeConversation = conversations.find(c => c.conversationId === activeConversationId);
+    if (!activeConversation) return;
+
+    const receiverId = activeConversation.otherParticipant.id;
+
+    try {
+      const response = await axios.post('/api/messages/send', {
+        receiverId,
+        content: newMessage.trim(),
+      });
+
+      setMessages(prevMessages => [...prevMessages, response.data.message]);
+      setNewMessage('');
+
+      // Optimistically update the conversation list
+      setConversations(prev => prev.map(conv =>
+        conv.conversationId === activeConversationId
+          ? { ...conv, lastMessage: { content: newMessage.trim(), createdAt: new Date().toISOString(), isFromMe: true } }
+          : conv
+      ));
+
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      alert('Failed to send message. Please try again.');
+    }
   };
 
   const handleStartReading = (readerId) => {
-    // TODO: Implement start reading functionality
-    alert(`Starting reading with reader ${readerId}`);
+    navigate(`/reading/new?readerId=${readerId}`);
   };
 
   const formatTime = (timestamp) => {
@@ -186,72 +119,74 @@ const Messages = () => {
               </button>
             </div>
             
-            <div className="space-y-3 overflow-y-auto max-h-[600px]">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setActiveChat(conversation.id)}
-                  className={`p-4 rounded-lg cursor-pointer transition-all ${
-                    activeChat === conversation.id
-                      ? 'bg-mystical-pink bg-opacity-20 border border-mystical-pink'
-                      : 'bg-gray-800 bg-opacity-50 hover:bg-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="text-2xl">{conversation.participantAvatar}</div>
-                      {conversation.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-800"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-playfair text-white font-semibold truncate">
-                          {conversation.participantName}
-                        </h3>
-                        {conversation.unreadCount > 0 && (
-                          <span className="bg-mystical-pink text-white rounded-full px-2 py-1 text-xs">
-                            {conversation.unreadCount}
-                          </span>
+            {loading ? <LoadingSpinner text="Loading conversations..." /> : (
+              <div className="space-y-3 overflow-y-auto max-h-[600px]">
+                {conversations.map((conv) => (
+                  <div
+                    key={conv.conversationId}
+                    onClick={() => setActiveConversationId(conv.conversationId)}
+                    className={`p-4 rounded-lg cursor-pointer transition-all ${
+                      activeConversationId === conv.conversationId
+                        ? 'bg-mystical-pink bg-opacity-20 border border-mystical-pink'
+                        : 'bg-gray-800 bg-opacity-50 hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <div className="text-2xl">{conv.otherParticipant.avatar || '👤'}</div>
+                        {conv.otherParticipant.isOnline && (
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-800"></div>
                         )}
                       </div>
-                      <p className="font-playfair text-gray-300 text-sm truncate">
-                        {conversation.lastMessage}
-                      </p>
-                      <p className="font-playfair text-gray-400 text-xs">
-                        {formatTime(conversation.lastMessageTime)}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-playfair text-white font-semibold truncate">
+                            {conv.otherParticipant.name}
+                          </h3>
+                          {conv.unreadCount > 0 && (
+                            <span className="bg-mystical-pink text-white rounded-full px-2 py-1 text-xs">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-playfair text-gray-300 text-sm truncate">
+                          {conv.lastMessage.isFromMe && "You: "}{conv.lastMessage.content}
+                        </p>
+                        <p className="font-playfair text-gray-400 text-xs">
+                          {formatTime(conv.lastMessage.createdAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Chat Interface */}
           <div className="lg:col-span-2 card-mystical flex flex-col">
-            {activeChat ? (
+            {activeConversationId ? (
               <>
                 {/* Chat Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="text-3xl">
-                      {conversations.find(c => c.id === activeChat)?.participantAvatar}
+                      {conversations.find(c => c.conversationId === activeConversationId)?.otherParticipant.avatar || '👤'}
                     </div>
                     <div>
                       <h3 className="font-playfair text-xl text-white font-semibold">
-                        {conversations.find(c => c.id === activeChat)?.participantName}
+                        {conversations.find(c => c.conversationId === activeConversationId)?.otherParticipant.name}
                       </h3>
                       <p className="font-playfair text-gray-300 text-sm">
-                        {conversations.find(c => c.id === activeChat)?.isOnline ? 'Online' : 'Offline'}
+                        {conversations.find(c => c.conversationId === activeConversationId)?.otherParticipant.isOnline ? 'Online' : 'Offline'}
                       </p>
                     </div>
                   </div>
                   
-                  {conversations.find(c => c.id === activeChat)?.participantRole === 'reader' && (
+                  {conversations.find(c => c.conversationId === activeConversationId)?.otherParticipant.role === 'reader' && (
                     <button
                       className="btn-mystical"
-                      onClick={() => handleStartReading(activeChat)}
+                      onClick={() => handleStartReading(conversations.find(c => c.conversationId === activeConversationId)?.otherParticipant.id)}
                     >
                       Start Reading
                     </button>
@@ -259,29 +194,31 @@ const Messages = () => {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto py-4 space-y-4 max-h-[450px]">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.isFromCurrentUser ? 'justify-end' : 'justify-start'}`}
-                    >
+                {loadingMessages ? <LoadingSpinner text="Loading messages..." /> : (
+                  <div className="flex-1 overflow-y-auto py-4 space-y-4 max-h-[450px]">
+                    {messages.map((message) => (
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.isFromCurrentUser
-                            ? 'bg-mystical-pink text-white'
-                            : 'bg-gray-700 text-white'
-                        }`}
+                        key={message._id}
+                        className={`flex ${message.senderId === user._id ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="font-playfair">{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.isFromCurrentUser ? 'text-pink-100' : 'text-gray-400'
-                        }`}>
-                          {formatTime(message.timestamp)}
-                        </p>
+                        <div
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            message.senderId === user._id
+                              ? 'bg-mystical-pink text-white'
+                              : 'bg-gray-700 text-white'
+                          }`}
+                        >
+                          <p className="font-playfair">{message.content}</p>
+                          <p className={`text-xs mt-1 ${
+                            message.senderId === user._id ? 'text-pink-100' : 'text-gray-400'
+                          }`}>
+                            {formatTime(message.createdAt)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Message Input */}
                 <div className="pt-4 border-t border-gray-700">

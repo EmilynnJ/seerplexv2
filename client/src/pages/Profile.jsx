@@ -19,15 +19,13 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Update profile via Clerk
+    console.log('Profile update functionality to be implemented:', formData);
     setEditing(false);
-    alert('Profile updated successfully!');
   };
 
   const handleDeleteAccount = () => {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      // TODO: Implement account deletion
-      alert('Account deletion would be processed here');
+      console.log('Account deletion functionality to be implemented');
     }
   };
 

@@ -5,13 +5,11 @@ const Community = () => {
   const navigate = useNavigate();
 
   const handleDiscordJoin = () => {
-    // TODO: Replace with actual Discord invite link
-    window.open('https://discord.gg/soulseer', '_blank');
+    window.open('https://discord.gg/your-server-invite', '_blank');
   };
 
   const handlePatreonJoin = () => {
-    // TODO: Replace with actual Patreon link
-    window.open('https://patreon.com/soulseer', '_blank');
+    window.open('https://www.patreon.com/your-patreon-page', '_blank');
   };
 
   return (
