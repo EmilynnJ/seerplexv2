@@ -64,9 +64,11 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/readers" element={<Dashboard />} />
+            <Route path="/livestream" element={<LiveStream />} />
+            <Route path="/live/:streamId?" element={<LiveStream />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/community" element={<Community />} />
-            <Route path="/live/:streamId?" element={<LiveStream />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/policies" element={<Policies />} />
             <Route path="/unauthorized" element={<Unauthorized />} />

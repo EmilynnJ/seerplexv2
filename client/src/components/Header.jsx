@@ -13,8 +13,8 @@ const Header = () => {
   const navigation = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
-    { name: 'Readings', path: '/dashboard' },
-    { name: 'Live', path: '/live' },
+    { name: 'Readers', path: '/readers' },
+    { name: 'Live', path: '/livestream' },
     { name: 'Shop', path: '/shop' },
     { name: 'Community', path: '/community' },
     { name: 'Messages', path: '/messages' }

@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen py-16">
       <div className="max-w-4xl mx-auto px-4">
@@ -27,7 +30,7 @@ const About = () => {
         </div>
         
         <div className="text-center mb-12">
-          <img 
+          <img
             src="https://i.postimg.cc/s2ds9RtC/FOUNDER.jpg"
             alt="Founder: Emilynn"
             className="w-64 h-64 object-cover rounded-full mx-auto border-4 border-mystical-pink shadow-2xl mb-6"
@@ -45,6 +48,9 @@ const About = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <div className="card-mystical text-center">
+            <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">⚖️</span>
+            </div>
             <h3 className="font-alex-brush text-3xl text-mystical-pink mb-4">
               Ethical Standards
             </h3>
@@ -54,6 +60,9 @@ const About = () => {
           </div>
           
           <div className="card-mystical text-center">
+            <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">💰</span>
+            </div>
             <h3 className="font-alex-brush text-3xl text-mystical-pink mb-4">
               Fair Revenue
             </h3>
@@ -63,6 +72,9 @@ const About = () => {
           </div>
           
           <div className="card-mystical text-center">
+            <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">🤝</span>
+            </div>
             <h3 className="font-alex-brush text-3xl text-mystical-pink mb-4">
               Community
             </h3>
@@ -71,12 +83,71 @@ const About = () => {
             </p>
           </div>
         </div>
+
+        {/* Additional Mission Section */}
+        <div className="card-mystical mb-12">
+          <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-8">
+            Our Mission & Values
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-4">What We Believe</h3>
+              <ul className="space-y-3 font-playfair text-gray-300">
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-pink mt-1">•</span>
+                  <span>Everyone deserves access to authentic spiritual guidance</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-pink mt-1">•</span>
+                  <span>Psychic readers should be fairly compensated for their gifts</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-pink mt-1">•</span>
+                  <span>Spiritual services should never exploit vulnerability</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-pink mt-1">•</span>
+                  <span>Community and connection enhance spiritual growth</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-4">How We're Different</h3>
+              <ul className="space-y-3 font-playfair text-gray-300">
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-gold mt-1">•</span>
+                  <span>No predatory pricing or hidden fees</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-gold mt-1">•</span>
+                  <span>Readers have input on platform decisions</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-gold mt-1">•</span>
+                  <span>Transparent and ethical business practices</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="text-mystical-gold mt-1">•</span>
+                  <span>Focus on genuine connection over profit</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
         
         <div className="text-center">
-          <button className="btn-mystical mr-4">
+          <button
+            className="btn-mystical mr-4"
+            onClick={() => navigate('/readers')}
+          >
             Find Your Reader
           </button>
-          <button className="btn-mystical">
+          <button
+            className="btn-mystical"
+            onClick={() => navigate('/community')}
+          >
             Join Our Community
           </button>
         </div>

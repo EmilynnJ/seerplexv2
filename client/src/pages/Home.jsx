@@ -53,11 +53,11 @@ const Home = () => {
     <div className="min-h-screen">
       <Hero />
       
-      {/* Online Readers */}
+      {/* 1. Online Readers */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-12">
-            Featured Readers Online Now
+            Online Readers
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -75,12 +75,27 @@ const Home = () => {
               <p className="font-playfair text-gray-300 text-lg">
                 No readers are currently online. Check back soon!
               </p>
+              <button
+                className="btn-mystical mt-4"
+                onClick={() => navigate('/readers')}
+              >
+                Browse All Readers
+              </button>
             </div>
           )}
+          
+          <div className="text-center mt-8">
+            <button
+              className="btn-mystical"
+              onClick={() => navigate('/readers')}
+            >
+              View All Readers
+            </button>
+          </div>
         </div>
       </section>
       
-      {/* Live Streams */}
+      {/* 2. Live Streams */}
       <section className="py-16 bg-black bg-opacity-30">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-12">
@@ -90,7 +105,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {liveStreams.map((stream) => (
               <div key={stream.id} className="card-mystical cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-                   onClick={() => navigate(`/live/${stream.id}`)}>
+                   onClick={() => navigate(`/livestream`)}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-playfair text-xl text-white font-semibold">
                     {stream.title}
@@ -122,8 +137,151 @@ const Home = () => {
               <p className="font-playfair text-gray-300 text-lg">
                 No live streams at the moment. Check back soon!
               </p>
+              <button
+                className="btn-mystical mt-4"
+                onClick={() => navigate('/livestream')}
+              >
+                View Live Streams
+              </button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* 3. Featured Products */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-12">
+            Featured Products
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="card-mystical text-center">
+              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">🔮</span>
+              </div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Crystal Readings Guide</h3>
+              <p className="font-playfair text-gray-300 text-sm mb-4">Digital guide to crystal healing and readings</p>
+              <span className="font-playfair text-mystical-gold font-semibold">$9.99</span>
+            </div>
+            
+            <div className="card-mystical text-center">
+              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">🃏</span>
+              </div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Tarot Deck Set</h3>
+              <p className="font-playfair text-gray-300 text-sm mb-4">Premium tarot cards with guidebook</p>
+              <span className="font-playfair text-mystical-gold font-semibold">$24.99</span>
+            </div>
+            
+            <div className="card-mystical text-center">
+              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">🧘‍♀️</span>
+              </div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Meditation Audio</h3>
+              <p className="font-playfair text-gray-300 text-sm mb-4">Guided spiritual meditation sessions</p>
+              <span className="font-playfair text-mystical-gold font-semibold">$14.99</span>
+            </div>
+            
+            <div className="card-mystical text-center">
+              <div className="w-16 h-16 bg-mystical-pink rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">✨</span>
+              </div>
+              <h3 className="font-playfair text-xl text-white font-semibold mb-2">Sage Bundle</h3>
+              <p className="font-playfair text-gray-300 text-sm mb-4">Cleansing sage for spiritual practice</p>
+              <span className="font-playfair text-mystical-gold font-semibold">$12.99</span>
+            </div>
+          </div>
+          
+          <div className="text-center mt-8">
+            <button
+              className="btn-mystical"
+              onClick={() => navigate('/shop')}
+            >
+              Browse Shop
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Community Highlights */}
+      <section className="py-16 bg-black bg-opacity-30">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-12">
+            Community Highlights
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="card-mystical">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold">D</span>
+                </div>
+                <div>
+                  <h3 className="font-playfair text-xl text-white font-semibold">Join Our Discord</h3>
+                  <p className="font-playfair text-gray-300 text-sm">Connect with fellow seekers</p>
+                </div>
+              </div>
+              <p className="font-playfair text-gray-300 mb-4">
+                Join our vibrant community of spiritual seekers and psychic readers. Share experiences, ask questions, and connect with like-minded souls.
+              </p>
+              <button
+                className="btn-mystical"
+                onClick={() => navigate('/community')}
+              >
+                Join Discord
+              </button>
+            </div>
+            
+            <div className="card-mystical">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold">P</span>
+                </div>
+                <div>
+                  <h3 className="font-playfair text-xl text-white font-semibold">Support on Patreon</h3>
+                  <p className="font-playfair text-gray-300 text-sm">Exclusive content & perks</p>
+                </div>
+              </div>
+              <p className="font-playfair text-gray-300 mb-4">
+                Support SoulSeer and get exclusive access to premium content, early reader access, and special community events.
+              </p>
+              <button
+                className="btn-mystical"
+                onClick={() => navigate('/community')}
+              >
+                Join Patreon
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Newsletter Sign-up */}
+      <section className="py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="font-alex-brush text-4xl text-mystical-pink mb-6">
+            Stay Connected
+          </h2>
+          <p className="font-playfair text-lg text-gray-300 mb-8">
+            Join our newsletter for spiritual insights, reader spotlights, and exclusive offers
+          </p>
+          
+          <div className="card-mystical max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="input-mystical flex-1"
+              />
+              <button className="btn-mystical">
+                Subscribe
+              </button>
+            </div>
+            <p className="font-playfair text-gray-400 text-sm mt-4">
+              We respect your privacy. Unsubscribe at any time.
+            </p>
+          </div>
         </div>
       </section>
     </div>
