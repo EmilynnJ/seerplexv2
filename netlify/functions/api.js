@@ -4,16 +4,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
-// Import routes
-const authRoutes = require('../../routes/auth');
-const userRoutes = require('../../routes/users');
-const sessionRoutes = require('../../routes/sessions');
-const stripeRoutes = require('../../routes/stripe');
-const messageRoutes = require('../../routes/messages');
-const adminRoutes = require('../../routes/admin');
+// Import routes from server directory (more comprehensive implementations)
+const authRoutes = require('../../server/routes/auth');
+const userRoutes = require('../../server/routes/users');
+const sessionRoutes = require('../../server/routes/sessions');
+const stripeRoutes = require('../../server/routes/stripe');
+const messageRoutes = require('../../server/routes/messages');
+const adminRoutes = require('../../server/routes/admin');
 
-// Import middleware
-const authMiddleware = require('../../middleware/auth');
+// Import middleware from server directory
+const { authMiddleware } = require('../../server/middleware/auth');
 
 // Initialize Express
 const app = express();

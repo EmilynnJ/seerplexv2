@@ -12,11 +12,11 @@ const RoleRedirect = ({ children }) => {
     if (isLoaded && user) {
       const role = user.publicMetadata.role;
       if (role === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/dashboard/admin');
       } else if (role === 'reader') {
-        navigate('/reader-dashboard');
+        navigate('/dashboard/reader');
       } else if (role === 'client') {
-        navigate('/client-dashboard');
+        navigate('/dashboard/client');
       }
     }
   }, [isLoaded, user, navigate]);

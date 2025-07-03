@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -17,6 +18,11 @@ import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import HelpCenter from './pages/HelpCenter';
 import Policies from './pages/Policies';
+import Unauthorized from './pages/Unauthorized';
+// Role-specific dashboard pages
+import AdminDashboard from './pages/dashboard/admin';
+import ReaderDashboard from './pages/dashboard/reader';
+import ClientDashboard from './pages/dashboard/client';
 
 function App() {
   return (
@@ -26,20 +32,77 @@ function App() {
           <Header />
           <main className="flex-1">
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/reading/:sessionId" element={<ReadingRoom />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/live/:streamId?" element={<LiveStream />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/community" element={<Community />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/live/:streamId?" element={<LiveStream />} />
               <Route path="/help" element={<HelpCenter />} />
               <Route path="/policies" element={<Policies />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+
+              {/* Protected routes - authenticated users only */}
+              <Route
+                path="/reading/:sessionId"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'reader', 'client']}>
+                    <ReadingRoom />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'reader', 'client']}>
+                    <Messages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'reader', 'client']}>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Dashboard routes - general dashboard for backward compatibility */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'reader', 'client']}>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Role-specific dashboard routes */}
+              <Route
+                path="/dashboard/admin"
+                element={<AdminDashboard />}
+              />
+              <Route
+                path="/dashboard/reader"
+                element={<ReaderDashboard />}
+              />
+              <Route
+                path="/dashboard/client"
+                element={<ClientDashboard />}
+              />
+
+              {/* Admin-only routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </main>
           <Footer />
