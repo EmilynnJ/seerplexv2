@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser, useClerk } from '@clerk/clerk-react';
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -18,6 +19,12 @@ const Header = () => {
     { name: 'Community', path: '/community' },
     { name: 'Messages', path: '/messages' }
   ];
+
+  const handleLogout = () => {
+    signOut();
+  };
+
+  const userRole = user?.publicMetadata?.role;
 
   return (
     <header className="bg-black bg-opacity-80 backdrop-filter backdrop-blur-lg border-b border-pink-500 border-opacity-20 sticky top-0 z-50">
@@ -49,7 +56,7 @@ const Header = () => {
 
           {/* Auth Buttons / User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {isLoaded && user ? (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/dashboard"
@@ -63,7 +70,7 @@ const Header = () => {
                 >
                   Profile
                 </Link>
-                {user.role === 'admin' && (
+                {userRole === 'admin' && (
                   <Link
                     to="/admin"
                     className="font-playfair text-mystical-gold hover:text-yellow-300 transition-colors"
@@ -72,7 +79,7 @@ const Header = () => {
                   </Link>
                 )}
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="btn-mystical"
                 >
                   Logout
@@ -128,7 +135,7 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
-            {user ? (
+            {isLoaded && user ? (
               <>
                 <Link
                   to="/dashboard"
@@ -144,7 +151,7 @@ const Header = () => {
                 >
                   Profile
                 </Link>
-                {user.role === 'admin' && (
+                {userRole === 'admin' && (
                   <Link
                     to="/admin"
                     className="block px-3 py-2 font-playfair text-mystical-gold hover:text-yellow-300"
@@ -155,7 +162,7 @@ const Header = () => {
                 )}
                 <button
                   onClick={() => {
-                    logout();
+                    handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
                   className="block w-full text-left px-3 py-2 font-playfair text-white hover:text-mystical-pink"

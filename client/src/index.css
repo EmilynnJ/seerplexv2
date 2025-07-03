@@ -116,3 +116,103 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Clerk Component Styling */
+.clerk-signin-wrapper,
+.clerk-signup-wrapper {
+  --clerk-color-primary: var(--pink);
+  --clerk-color-primary-hover: #FF1493;
+  --clerk-color-text: var(--white);
+  --clerk-color-text-secondary: rgba(255, 255, 255, 0.8);
+  --clerk-color-background: transparent;
+  --clerk-color-input-background: rgba(26, 26, 46, 0.8);
+  --clerk-color-input-border: rgba(255, 105, 180, 0.3);
+  --clerk-color-input-border-focus: var(--pink);
+  --clerk-border-radius: 8px;
+  --clerk-font-family: 'Playfair Display', serif;
+}
+
+.clerk-signin-wrapper .cl-card,
+.clerk-signup-wrapper .cl-card {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.clerk-signin-wrapper .cl-formButtonPrimary,
+.clerk-signup-wrapper .cl-formButtonPrimary {
+  background: linear-gradient(135deg, var(--pink), #FF1493) !important;
+  border: 2px solid var(--gold) !important;
+  color: var(--white) !important;
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.clerk-signin-wrapper .cl-formButtonPrimary:hover,
+.clerk-signup-wrapper .cl-formButtonPrimary:hover {
+  background: linear-gradient(135deg, var(--gold), #FFD700) !important;
+  color: var(--black) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(255, 105, 180, 0.3) !important;
+}
+
+.clerk-signin-wrapper .cl-formFieldInput,
+.clerk-signup-wrapper .cl-formFieldInput {
+  background: rgba(26, 26, 46, 0.8) !important;
+  border: 2px solid rgba(255, 105, 180, 0.3) !important;
+  color: var(--white) !important;
+  font-family: 'Playfair Display', serif !important;
+}
+
+.clerk-signin-wrapper .cl-formFieldInput:focus,
+.clerk-signup-wrapper .cl-formFieldInput:focus {
+  border-color: var(--pink) !important;
+  box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.2) !important;
+}
+
+.clerk-signin-wrapper .cl-formFieldLabel,
+.clerk-signup-wrapper .cl-formFieldLabel {
+  color: var(--white) !important;
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 500 !important;
+}
+
+.clerk-signin-wrapper .cl-footerActionLink,
+.clerk-signup-wrapper .cl-footerActionLink {
+  color: var(--pink) !important;
+  font-family: 'Playfair Display', serif !important;
+}
+
+.clerk-signin-wrapper .cl-footerActionLink:hover,
+.clerk-signup-wrapper .cl-footerActionLink:hover {
+  color: #FF1493 !important;
+}
+
+.clerk-signin-wrapper .cl-identityPreviewText,
+.clerk-signup-wrapper .cl-identityPreviewText {
+  color: var(--white) !important;
+  font-family: 'Playfair Display', serif !important;
+}
+
+.clerk-signin-wrapper .cl-identityPreviewEditButton,
+.clerk-signup-wrapper .cl-identityPreviewEditButton {
+  color: var(--pink) !important;
+  font-family: 'Playfair Display', serif !important;
+}
+
+.clerk-signin-wrapper .cl-socialButtonsIconButton,
+.clerk-signup-wrapper .cl-socialButtonsIconButton {
+  background: linear-gradient(135deg, var(--pink), #FF1493) !important;
+  border: 2px solid var(--gold) !important;
+  color: var(--white) !important;
+  font-family: 'Playfair Display', serif !important;
+  transition: all 0.3s ease !important;
+}
+
+.clerk-signin-wrapper .cl-socialButtonsIconButton:hover,
+.clerk-signup-wrapper .cl-socialButtonsIconButton:hover {
+  background: linear-gradient(135deg, var(--gold), #FFD700) !important;
+  color: var(--black) !important;
+  transform: translateY(-2px) !important;
+}
