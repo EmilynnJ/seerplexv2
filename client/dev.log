@@ -5,8 +5,9 @@ nohup: ignoring input
 
 Port 5173 is in use, trying another one...
 Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
 
-  VITE v7.0.0  ready in 295 ms
+  VITE v7.0.0  ready in 247 ms
 
-  ➜  Local:   http://localhost:5175/
-  ➜  Network: http://169.254.0.21:5175/
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://169.254.0.21:5176/
