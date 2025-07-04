@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Messages = () => {
-  const { user } = useAuth();
+  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -15,6 +15,8 @@ const Messages = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
 
   const fetchConversations = useCallback(async () => {
+    if (!isLoaded || !user) return;
+    
     try {
       setLoading(true);
       const response = await axios.get('/api/messages/conversations');
@@ -24,7 +26,7 @@ const Messages = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isLoaded, user]);
 
   useEffect(() => {
     fetchConversations();
@@ -93,6 +95,15 @@ const Messages = () => {
       return date.toLocaleDateString();
     }
   };
+
+  if (!isLoaded) {
+    return <LoadingSpinner text="Loading..." />;
+  }
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen py-8">

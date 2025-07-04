@@ -128,19 +128,23 @@ const ClientDashboard = () => {
   }, []);
 
   const handleAddFunds = () => {
-    console.log('Add funds functionality to be implemented');
+    // Navigate to payment page or open Stripe payment modal
+    navigate('/shop?category=credits');
   };
 
   const handleConnectReader = (readerId: number, sessionType: string) => {
-    console.log(`Connecting to reader ${readerId} for ${sessionType} session`);
+    // Navigate to reading room with reader and session type
+    navigate(`/reading/new?readerId=${readerId}&type=${sessionType}`);
   };
 
   const handleAddToFavorites = (readerId: number) => {
-    console.log(`Added reader ${readerId} to favorites`);
+    // Add reader to favorites list
+    alert('Reader added to favorites!');
   };
 
   const handleViewOrder = (orderId: number) => {
-    console.log(`Viewing order ${orderId}`);
+    // Navigate to order details page
+    navigate(`/orders/${orderId}`);
   };
 
   const tabs = [

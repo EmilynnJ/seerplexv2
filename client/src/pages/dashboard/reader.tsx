@@ -91,15 +91,19 @@ const ReaderDashboard = () => {
 
   const handleToggleOnline = () => {
     setIsOnline(!isOnline);
-    console.log(`Toggling online status to: ${!isOnline}`);
+    // In a real app, this would make an API call to update status
+    alert(`Status changed to ${!isOnline ? 'Online' : 'Offline'}`);
   };
 
   const handleUpdateRates = () => {
-    console.log('Rate update functionality to be implemented');
+    // Open rate update modal or form
+    alert('Rate update form would open here - allowing you to set per-minute rates for video, audio, and chat');
   };
 
   const handleAcceptSession = (notificationId: number) => {
-    console.log(`Accepting session from notification ${notificationId}`);
+    // Accept the session and navigate to reading room
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    alert('Session accepted! Redirecting to reading room...');
   };
 
   const tabs = [

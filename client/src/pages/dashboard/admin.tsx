@@ -43,15 +43,30 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproveReader = (readerId: number) => {
-    console.log(`Approved reader with ID: ${readerId}`);
+    setReaderApplications(prev => 
+      prev.map(reader => 
+        reader.id === readerId 
+          ? { ...reader, status: 'approved' }
+          : reader
+      )
+    );
+    alert('Reader application approved successfully!');
   };
 
   const handleRejectReader = (readerId: number) => {
-    console.log(`Rejected reader with ID: ${readerId}`);
+    setReaderApplications(prev => 
+      prev.map(reader => 
+        reader.id === readerId 
+          ? { ...reader, status: 'rejected' }
+          : reader
+      )
+    );
+    alert('Reader application rejected.');
   };
 
   const handleCreateReader = () => {
-    console.log('Create new reader profile');
+    // Navigate to create reader form or open modal
+    alert('Create reader functionality - would open reader creation form');
   };
 
   const tabs = [

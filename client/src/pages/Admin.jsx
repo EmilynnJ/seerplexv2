@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import axios from 'axios';
 
 const Admin = () => {
-  const { user } = useAuth();
+  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('readers');
@@ -26,12 +26,14 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    if (!isLoaded) return;
+    
+    if (!user || user.publicMetadata?.role !== 'admin') {
       navigate('/dashboard');
       return;
     }
     fetchAdminData();
-  }, [user, navigate]);
+  }, [user, isLoaded, navigate]);
 
   const fetchAdminData = async () => {
     try {
@@ -94,7 +96,7 @@ const Admin = () => {
     }
   };
 
-  if (!user || user.role !== 'admin') {
+  if (!isLoaded || !user || user.publicMetadata?.role !== 'admin') {
     return null;
   }
 

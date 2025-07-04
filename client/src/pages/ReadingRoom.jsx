@@ -140,3 +140,5 @@ const ReadingRoom = () => {
   );
 };
 
+export default ReadingRoom;
+
