@@ -117,11 +117,13 @@ const Community = () => {
   const getCategoryColor = (category) => {
     const colors = {
       general: 'bg-gray-600',
-      events: 'bg-mystical-pink',
+      // Use mystical-pink if available, otherwise fallback to bg-pink-600
+      events: 'bg-mystical-pink bg-pink-600',
       healing: 'bg-green-600',
       astrology: 'bg-purple-600',
       dreams: 'bg-blue-600',
-      tarot: 'bg-mystical-gold'
+      // Use mystical-gold if available, otherwise fallback to bg-yellow-500
+      tarot: 'bg-mystical-gold bg-yellow-500'
     };
     return colors[category] || 'bg-gray-600';
   };
