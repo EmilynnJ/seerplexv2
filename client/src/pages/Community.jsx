@@ -96,8 +96,19 @@ const Community = () => {
   const formatTimeAgo = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
+
+    // Check for invalid date
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+
+    // Check for future date
+    if (date > now) {
+      return 'In the future';
+    }
+
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
     return `${Math.floor(diffInHours / 24)}d ago`;
