@@ -128,9 +128,12 @@ const Community = () => {
     return colors[category] || 'bg-gray-600';
   };
 
+  // Configurable threshold for "popular" posts
+  const POPULAR_LIKES_THRESHOLD = 20;
+
   const filteredPosts = forumPosts.filter(post => {
     if (activeTab === 'recent') return true;
-    if (activeTab === 'popular') return post.likes > 20;
+    if (activeTab === 'popular') return post.likes > POPULAR_LIKES_THRESHOLD;
     if (activeTab === 'pinned') return post.isPinned;
     return post.category === activeTab;
   });
