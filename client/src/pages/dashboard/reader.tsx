@@ -92,7 +92,7 @@ const ReaderDashboard = () => {
   const handleToggleOnline = () => {
     setIsOnline(!isOnline);
     // In a real app, this would make an API call to update status
-    alert(`Status changed to ${!isOnline ? 'Online' : 'Offline'}`);
+    alert(`Status changed to ${isOnline ? 'Offline' : 'Online'}`);
   };
 
   const handleUpdateRates = () => {
