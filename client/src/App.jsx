@@ -62,8 +62,8 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/login/*" element={<Login />} />
+          <Route path="/signup/*" element={<Signup />} />
           <Route path="/readers" element={<ReadersPage />} />
           <Route path="/livestream" element={<LiveStream />} />
           <Route path="/live/:streamId?" element={<LiveStream />} />
