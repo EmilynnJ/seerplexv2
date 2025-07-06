@@ -131,10 +131,15 @@ const Messages = () => {
             {loading ? <LoadingSpinner text="Loading conversations..." /> : (
               <div className="space-y-3 overflow-y-auto max-h-[600px]">
                 {conversations.map((conversation) => (
-                  <div
+                  <button
                     key={conversation.conversationId}
                     onClick={() => setActiveConversationId(conversation.conversationId)}
-                    className={`p-4 rounded-lg cursor-pointer transition-all ${
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setActiveConversationId(conversation.conversationId);
+                      }
+                    }}
+                    className={`p-4 rounded-lg cursor-pointer transition-all w-full text-left ${
                       activeConversationId === conversation.conversationId
                         ? 'bg-mystical-pink bg-opacity-20 border border-mystical-pink'
                         : 'bg-gray-800 bg-opacity-50 hover:bg-gray-700'
@@ -166,7 +171,7 @@ const Messages = () => {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -236,7 +241,7 @@ const Messages = () => {
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Type your message..."
                       className="input-mystical flex-1"
                     />
@@ -250,8 +255,8 @@ const Messages = () => {
                   
                   <div className="mt-3 text-center">
                     <p className="font-playfair text-gray-400 text-sm">
-                      Messages with readers are free to send.
-                      <span className="text-mystical-pink"> Readers may choose to charge for responses.</span>
+                      Messages with readers are free to send.{' '}
+                      <span className="text-mystical-pink">Readers may choose to charge for responses.</span>
                     </p>
                   </div>
                 </div>

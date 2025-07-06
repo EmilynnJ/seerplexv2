@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use relative URLs in production, full URLs in development
+// Use Netlify functions path in production, full URLs in development
 const API_BASE_URL = import.meta.env.PROD
-  ? '' // Use relative URLs in production (same domain)
+  ? '/.netlify/functions/api' // Use Netlify functions path in production
   : import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
 // Create axios instance with base configuration
@@ -16,11 +16,15 @@ const api = axios.create({
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(
-  (config) => {
-    // Get token from Clerk
-    const token = window.Clerk?.session?.getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      // Get token from Clerk (async)
+      const token = await window.Clerk?.session?.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Failed to get Clerk token:', error);
     }
     return config;
   },

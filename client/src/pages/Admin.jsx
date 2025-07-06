@@ -182,10 +182,11 @@ const Admin = () => {
                   <form onSubmit={handleCreateReader} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                        <label htmlFor="email" className="font-playfair text-white text-sm font-medium mb-2 block">
                           Email
                         </label>
                         <input
+                          id="email"
                           type="email"
                           value={newReader.email}
                           onChange={(e) => setNewReader({...newReader, email: e.target.value})}
@@ -194,10 +195,11 @@ const Admin = () => {
                         />
                       </div>
                       <div>
-                        <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                        <label htmlFor="password" className="font-playfair text-white text-sm font-medium mb-2 block">
                           Password
                         </label>
                         <input
+                          id="password"
                           type="password"
                           value={newReader.password}
                           onChange={(e) => setNewReader({...newReader, password: e.target.value})}
@@ -208,10 +210,11 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                      <label htmlFor="name" className="font-playfair text-white text-sm font-medium mb-2 block">
                         Name
                       </label>
                       <input
+                        id="name"
                         type="text"
                         value={newReader.name}
                         onChange={(e) => setNewReader({...newReader, name: e.target.value})}
@@ -221,10 +224,11 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                      <label htmlFor="bio" className="font-playfair text-white text-sm font-medium mb-2 block">
                         Bio
                       </label>
                       <textarea
+                        id="bio"
                         value={newReader.bio}
                         onChange={(e) => setNewReader({...newReader, bio: e.target.value})}
                         className="input-mystical w-full h-24"
@@ -233,10 +237,11 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                      <label htmlFor="specialties" className="font-playfair text-white text-sm font-medium mb-2 block">
                         Specialties (comma-separated)
                       </label>
                       <input
+                        id="specialties"
                         type="text"
                         value={newReader.specialties}
                         onChange={(e) => setNewReader({...newReader, specialties: e.target.value})}
@@ -247,10 +252,11 @@ const Admin = () => {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                        <label htmlFor="videoRate" className="font-playfair text-white text-sm font-medium mb-2 block">
                           Video Rate ($/min)
                         </label>
                         <input
+                          id="videoRate"
                           type="number"
                           step="0.01"
                           value={newReader.rates.video}
@@ -262,10 +268,11 @@ const Admin = () => {
                         />
                       </div>
                       <div>
-                        <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                        <label htmlFor="audioRate" className="font-playfair text-white text-sm font-medium mb-2 block">
                           Audio Rate ($/min)
                         </label>
                         <input
+                          id="audioRate"
                           type="number"
                           step="0.01"
                           value={newReader.rates.audio}
@@ -277,10 +284,11 @@ const Admin = () => {
                         />
                       </div>
                       <div>
-                        <label className="font-playfair text-white text-sm font-medium mb-2 block">
+                        <label htmlFor="chatRate" className="font-playfair text-white text-sm font-medium mb-2 block">
                           Chat Rate ($/min)
                         </label>
                         <input
+                          id="chatRate"
                           type="number"
                           step="0.01"
                           value={newReader.rates.chat}
