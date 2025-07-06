@@ -2,8 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { useUser } from '@clerk/clerk-react';
 
+interface Session {
+  id: number;
+  clientName: string;
+  type: 'video' | 'audio' | 'chat';
+  duration: string;
+  amount: number;
+  date: string;
+  rating: number;
+  status: 'completed' | 'upcoming' | 'in-progress';
+}
+
+interface Notification {
+  id: number;
+  type: 'new_session' | 'payout' | 'review';
+  message: string;
+  time: string;
+  urgent: boolean;
+}
+
 const ReaderDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
   const [isOnline, setIsOnline] = useState(false);
   const [earnings, setEarnings] = useState({
@@ -18,8 +37,8 @@ const ReaderDashboard = () => {
     audio: 2.99,
     chat: 1.99
   });
-  const [sessions, setSessions] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Mock data - replace with actual API calls
   useEffect(() => {
@@ -46,9 +65,9 @@ const ReaderDashboard = () => {
         id: 2,
         clientName: "John D.",
         type: "chat",
-        duration: "18:45",
-        amount: 37.25,
-        date: "2024-01-15T11:20:00Z",
+        duration: "15:00",
+        amount: 29.85,
+        date: "2024-01-15T11:00:00Z",
         rating: 4,
         status: "completed"
       },
@@ -121,7 +140,7 @@ const ReaderDashboard = () => {
               Reader Dashboard
             </h1>
             <p className="font-playfair text-gray-300 text-lg">
-              Welcome back, {user?.profile?.name || user?.email || 'Reader'}
+              Welcome back, {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Reader'}
             </p>
           </div>
           

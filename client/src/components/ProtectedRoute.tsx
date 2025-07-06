@@ -1,5 +1,9 @@
 import React from 'react';
-import { useUser, RedirectToSignIn } from '@clerk/clerk-react';
+import { useUser, useAuth } from '@clerk/clerk-react';
+import { Navigate, useLocation } from 'react-router-dom';
+import LoadingSpinner from './LoadingSpinner';
+
+type UserRole = 'admin' | 'reader' | 'client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
