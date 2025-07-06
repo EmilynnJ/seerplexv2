@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
-import axios from 'axios';
+import { adminAPI } from '../utils/api';
 
 const Admin = () => {
   const { user } = useUser();
@@ -36,12 +36,12 @@ const Admin = () => {
   const fetchAdminData = async () => {
     try {
       const [readersRes, sessionsRes] = await Promise.all([
-        axios.get('/api/admin/readers'),
-        axios.get('/api/admin/sessions')
+        adminAPI.getReaders(),
+        adminAPI.getSessions()
       ]);
       
-      setReaders(readersRes.data.readers);
-      setSessions(sessionsRes.data.sessions);
+      setReaders(readersRes.data.readers || readersRes.data);
+      setSessions(sessionsRes.data.sessions || sessionsRes.data);
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
@@ -58,7 +58,7 @@ const Admin = () => {
         specialties: newReader.specialties.split(',').map(s => s.trim())
       };
       
-      await axios.post('/api/admin/readers', readerData);
+      await adminAPI.createReader(readerData);
       
       setShowCreateReader(false);
       setNewReader({
@@ -84,7 +84,7 @@ const Admin = () => {
 
   const toggleReaderStatus = async (readerId, currentStatus) => {
     try {
-      await axios.patch(`/api/admin/readers/${readerId}`, {
+      await adminAPI.updateReader(readerId, {
         isActive: !currentStatus
       });
       

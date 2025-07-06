@@ -51,82 +51,82 @@ api.interceptors.response.use(
 // Admin API Services
 export const adminAPI = {
   // Get platform statistics
-  getStats: (period = '30d') => api.get(`/api/admin/stats?period=${period}`),
+  getStats: (period = '30d') => api.get(`/admin/stats?period=${period}`),
   
   // Reader management
-  getReaders: (params = {}) => api.get('/api/admin/readers', { params }),
-  createReader: (readerData) => api.post('/api/admin/readers', readerData),
-  updateReader: (readerId, updates) => api.patch(`/api/admin/readers/${readerId}`, updates),
-  deleteReader: (readerId) => api.delete(`/api/admin/readers/${readerId}`),
+  getReaders: (params = {}) => api.get('/admin/readers', { params }),
+  createReader: (readerData) => api.post('/admin/readers', readerData),
+  updateReader: (readerId, updates) => api.patch(`/admin/readers/${readerId}`, updates),
+  deleteReader: (readerId) => api.delete(`/admin/readers/${readerId}`),
   
   // User management
-  getUsers: (params = {}) => api.get('/api/admin/users', { params }),
-  updateUser: (userId, updates) => api.patch(`/api/admin/users/${userId}`, updates),
+  getUsers: (params = {}) => api.get('/admin/users', { params }),
+  updateUser: (userId, updates) => api.patch(`/admin/users/${userId}`, updates),
   
   // Session management
-  getSessions: (params = {}) => api.get('/api/admin/sessions', { params }),
+  getSessions: (params = {}) => api.get('/admin/sessions', { params }),
   
   // Financial management
-  getRevenue: (period = '30d') => api.get(`/api/admin/revenue?period=${period}`),
-  processPayouts: () => api.post('/api/admin/payouts/process'),
+  getRevenue: (period = '30d') => api.get(`/admin/revenue?period=${period}`),
+  processPayouts: () => api.post('/admin/payouts/process'),
 };
 
 // Reader API Services
 export const readerAPI = {
   // Profile and settings
-  updateProfile: (profileData) => api.patch('/api/users/profile', profileData),
-  updateRates: (rates) => api.patch('/api/users/rates', { rates }),
-  updateStatus: (isOnline) => api.patch('/api/users/status', { isOnline }),
+  updateProfile: (profileData) => api.patch('/users/profile', profileData),
+  updateRates: (rates) => api.patch('/users/rates', { rates }),
+  updateStatus: (isOnline) => api.patch('/users/status', { isOnline }),
   
   // Earnings and statistics
-  getEarnings: (period = '30d') => api.get(`/api/users/earnings?period=${period}`),
-  getStats: () => api.get('/api/users/stats'),
+  getEarnings: (period = '30d') => api.get(`/users/earnings?period=${period}`),
+  getStats: () => api.get('/users/stats'),
   
   // Session management
-  getSessionHistory: (params = {}) => api.get('/api/sessions/history', { params }),
-  acceptSession: (sessionId) => api.post(`/api/sessions/${sessionId}/accept`),
-  declineSession: (sessionId) => api.post(`/api/sessions/${sessionId}/decline`),
-  endSession: (sessionId) => api.post(`/api/sessions/${sessionId}/end`),
+  getSessionHistory: (params = {}) => api.get('/sessions/history', { params }),
+  acceptSession: (sessionId) => api.post(`/sessions/${sessionId}/accept`),
+  declineSession: (sessionId) => api.post(`/sessions/${sessionId}/decline`),
+  endSession: (sessionId) => api.post(`/sessions/${sessionId}/end`),
 };
 
 // Client API Services
 export const clientAPI = {
   // Reader discovery
-  getReaders: (params = {}) => api.get('/api/users/readers', { params }),
-  getReader: (readerId) => api.get(`/api/users/readers/${readerId}`),
+  getReaders: (params = {}) => api.get('/users/readers', { params }),
+  getReader: (readerId) => api.get(`/users/readers/${readerId}`),
   
   // Session management
-  requestSession: (sessionData) => api.post('/api/sessions/request', sessionData),
-  getSessionHistory: (params = {}) => api.get('/api/sessions/history', { params }),
-  reviewSession: (sessionId, reviewData) => api.post(`/api/sessions/${sessionId}/review`, reviewData),
-  endSession: (sessionId) => api.post(`/api/sessions/${sessionId}/end`),
+  requestSession: (sessionData) => api.post('/sessions/request', sessionData),
+  getSessionHistory: (params = {}) => api.get('/sessions/history', { params }),
+  reviewSession: (sessionId, reviewData) => api.post(`/sessions/${sessionId}/review`, reviewData),
+  endSession: (sessionId) => api.post(`/sessions/${sessionId}/end`),
   
   // Profile and settings
-  updateProfile: (profileData) => api.patch('/api/users/profile', profileData),
-  getStats: () => api.get('/api/users/stats'),
+  updateProfile: (profileData) => api.patch('/users/profile', profileData),
+  getStats: () => api.get('/users/stats'),
   
   // Balance management (will integrate with Stripe)
-  addFunds: (amount) => api.post('/api/stripe/add-funds', { amount }),
-  getBalance: () => api.get('/api/users/balance'),
+  addFunds: (amount) => api.post('/stripe/add-funds', { amount }),
+  getBalance: () => api.get('/users/balance'),
 };
 
 // General API Services
 export const generalAPI = {
   // Authentication (if needed beyond Clerk)
-  verifyToken: () => api.get('/api/auth/verify'),
+  verifyToken: () => api.get('/auth/verify'),
   
   // File uploads
   uploadAvatar: (file) => {
     const formData = new FormData();
     formData.append('avatar', file);
-    return api.post('/api/upload/avatar', formData, {
+    return api.post('/upload/avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
   
   // Real-time notifications
-  getNotifications: () => api.get('/api/notifications'),
-  markNotificationRead: (notificationId) => api.patch(`/api/notifications/${notificationId}/read`),
+  getNotifications: () => api.get('/notifications'),
+  markNotificationRead: (notificationId) => api.patch(`/notifications/${notificationId}/read`),
 };
 
 export default api;

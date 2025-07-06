@@ -1,9 +1,9 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ReaderCard from '../components/ReaderCard';
 import { useUser } from '@clerk/clerk-react';
+import { clientAPI, readerAPI } from '../utils/api';
 
 const Dashboard = () => {
   const { user } = useUser();
@@ -26,28 +26,28 @@ const Dashboard = () => {
     try {
       if (user.role === 'client') {
         const [readersRes, sessionsRes] = await Promise.all([
-          axios.get('/api/users/readers'),
-          axios.get('/api/sessions/history')
+          clientAPI.getReaders(),
+          clientAPI.getSessionHistory()
         ]);
         
         setData({
-          readers: readersRes.data.readers,
-          sessions: sessionsRes.data.sessions,
+          readers: readersRes.data.readers || readersRes.data,
+          sessions: sessionsRes.data.sessions || sessionsRes.data,
           balance: user.balance || 0
         });
       } else if (user.role === 'reader') {
         const [sessionsRes, earningsRes] = await Promise.all([
-          axios.get('/api/sessions/history'),
-          axios.get('/api/users/earnings')
+          readerAPI.getSessionHistory(),
+          readerAPI.getEarnings()
         ]);
         
         setData({
-          sessions: sessionsRes.data.sessions,
+          sessions: sessionsRes.data.sessions || sessionsRes.data,
           earnings: earningsRes.data
         });
       }
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error('Dashboard load error:', error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const Dashboard = () => {
 
   const handleConnectReader = async (readerId, sessionType) => {
     try {
-      const response = await axios.post('/api/sessions/request', {
+      const response = await clientAPI.requestSession({
         readerId,
         sessionType
       });
@@ -69,9 +69,7 @@ const Dashboard = () => {
 
   const toggleOnlineStatus = async () => {
     try {
-      await axios.patch('/api/users/status', {
-        isOnline: !user.readerSettings?.isOnline
-      });
+      await readerAPI.updateStatus(!user.readerSettings?.isOnline);
       
       // Refresh user data
       window.location.reload();
