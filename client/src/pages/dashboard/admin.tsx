@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [readerApplications, setReaderApplications] = useState([]);
   const [analytics, setAnalytics] = useState({
@@ -43,30 +44,15 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproveReader = (readerId: number) => {
-    setReaderApplications(prev => 
-      prev.map(reader => 
-        reader.id === readerId 
-          ? { ...reader, status: 'approved' }
-          : reader
-      )
-    );
-    alert('Reader application approved successfully!');
+    console.log(`Approved reader with ID: ${readerId}`);
   };
 
   const handleRejectReader = (readerId: number) => {
-    setReaderApplications(prev => 
-      prev.map(reader => 
-        reader.id === readerId 
-          ? { ...reader, status: 'rejected' }
-          : reader
-      )
-    );
-    alert('Reader application rejected.');
+    console.log(`Rejected reader with ID: ${readerId}`);
   };
 
   const handleCreateReader = () => {
-    // Navigate to create reader form or open modal
-    alert('Create reader functionality - would open reader creation form');
+    console.log('Create new reader profile');
   };
 
   const tabs = [
@@ -367,10 +353,4 @@ const AdminDashboard = () => {
   );
 };
 
-const ProtectedAdminDashboard = () => (
-  <ProtectedRoute allowedRoles={['admin']}>
-    <AdminDashboard />
-  </ProtectedRoute>
-);
-
-export default ProtectedAdminDashboard;
+export default AdminDashboard;
