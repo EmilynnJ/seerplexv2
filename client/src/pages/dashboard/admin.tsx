@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-react';
 
+interface ReaderApplication {
+  id: number;
+  name: string;
+  email: string;
+  specialties: string[];
+  experience: string;
+  status: string;
+  appliedDate: string;
+}
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
-  const [readerApplications, setReaderApplications] = useState([]);
+  const [readerApplications, setReaderApplications] = useState<ReaderApplication[]>([]);
   const [analytics, setAnalytics] = useState({
     totalUsers: 0,
     activeReaders: 0,
