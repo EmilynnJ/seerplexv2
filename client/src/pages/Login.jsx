@@ -14,11 +14,11 @@ const Login = () => {
           </p>
         </div>
         
-        <SignIn 
+        <SignIn
           path="/login"
           routing="path"
           signUpUrl="/signup"
-          redirectUrl="/dashboard"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "mx-auto",
