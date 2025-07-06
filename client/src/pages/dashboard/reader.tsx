@@ -1,16 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { useUser } from '@clerk/clerk-react';
+import { readerAPI } from '../../utils/api';
 
 interface Session {
-  id: number;
-  clientName: string;
-  type: 'video' | 'audio' | 'chat';
-  duration: string;
-  amount: number;
-  date: string;
-  rating: number;
-  status: 'completed' | 'upcoming' | 'in-progress';
+  id: string;
+  sessionId: string;
+  sessionType: 'video' | 'audio' | 'chat';
+  duration: number;
+  totalCost: number;
+  readerEarnings: number;
+  createdAt: string;
+  rating?: number;
+  status: 'completed' | 'pending' | 'active' | 'cancelled';
+  client: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  isClient: boolean;
+}
+
+interface ReaderStats {
+  totalSessions: number;
+  totalEarnings: number;
+  totalMinutes: number;
+  averageSessionLength: number;
+  averageRating: number;
+  totalReviews: number;
+}
+
+interface EarningsData {
+  total: number;
+  pending: number;
+  paid: number;
+  today: number;
+  period: number;
+  lastPayout: string | null;
 }
 
 interface Notification {
@@ -25,101 +50,123 @@ const ReaderDashboard = () => {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
   const [isOnline, setIsOnline] = useState(false);
-  const [earnings, setEarnings] = useState({
-    today: 0,
-    week: 0,
-    month: 0,
-    pending: 0,
-    total: 0
-  });
-  const [rates, setRates] = useState({
+  const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [rates] = useState({
     video: 3.99,
     audio: 2.99,
     chat: 1.99
   });
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [stats, setStats] = useState<ReaderStats | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with actual API calls
+  // Load data
   useEffect(() => {
-    setEarnings({
-      today: 127.85,
-      week: 842.50,
-      month: 3247.90,
-      pending: 456.75,
-      total: 18247.30
-    });
-
-    setSessions([
-      {
-        id: 1,
-        clientName: "Sarah M.",
-        type: "video",
-        duration: "32:15",
-        amount: 107.60,
-        date: "2024-01-15T14:30:00Z",
-        rating: 5,
-        status: "completed"
-      },
-      {
-        id: 2,
-        clientName: "John D.",
-        type: "chat",
-        duration: "15:00",
-        amount: 29.85,
-        date: "2024-01-15T11:00:00Z",
-        rating: 4,
-        status: "completed"
-      },
-      {
-        id: 3,
-        clientName: "Maria L.",
-        type: "audio",
-        duration: "25:30",
-        amount: 76.25,
-        date: "2024-01-14T16:45:00Z",
-        rating: 5,
-        status: "completed"
-      }
-    ]);
-
-    setNotifications([
-      {
-        id: 1,
-        type: "new_session",
-        message: "New reading request from client",
-        time: "2 minutes ago",
-        urgent: true
-      },
-      {
-        id: 2,
-        type: "payout",
-        message: "Daily payout processed: $127.85",
-        time: "1 hour ago",
-        urgent: false
-      },
-      {
-        id: 3,
-        type: "review",
-        message: "New 5-star review received",
-        time: "3 hours ago",
-        urgent: false
-      }
-    ]);
+    loadReaderData();
   }, []);
 
-  const handleToggleOnline = () => {
-    setIsOnline(!isOnline);
-    console.log(`Toggling online status to: ${!isOnline}`);
+  const loadReaderData = async () => {
+    try {
+      setLoading(true);
+      const [earningsResponse, sessionsResponse, statsResponse] = await Promise.all([
+        readerAPI.getEarnings(),
+        readerAPI.getSessionHistory({ limit: 20 }),
+        readerAPI.getStats()
+      ]);
+      
+      setEarnings(earningsResponse.data.earnings);
+      setSessions(sessionsResponse.data.sessions);
+      setStats(statsResponse.data.stats);
+      
+      // Mock notifications for now
+      setNotifications([
+        {
+          id: 1,
+          type: "new_session",
+          message: "New reading request from client",
+          time: "2 minutes ago",
+          urgent: true
+        },
+        {
+          id: 2,
+          type: "payout",
+          message: `Daily payout processed: $${earningsResponse.data.earnings.today}`,
+          time: "1 hour ago",
+          urgent: false
+        },
+        {
+          id: 3,
+          type: "review",
+          message: "New 5-star review received",
+          time: "3 hours ago",
+          urgent: false
+        }
+      ]);
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to load reader data');
+      console.error('Reader dashboard load error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdateRates = () => {
-    console.log('Rate update functionality to be implemented');
+  const handleToggleOnline = async () => {
+    try {
+      await readerAPI.updateStatus(!isOnline);
+      setIsOnline(!isOnline);
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to update status');
+    }
+  };
+
+  const handleUpdateRates = async () => {
+    try {
+      await readerAPI.updateRates(rates);
+      alert('Rates updated successfully!');
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to update rates');
+    }
   };
 
   const handleAcceptSession = (notificationId: number) => {
     console.log(`Accepting session from notification ${notificationId}`);
   };
+
+  // Format duration from seconds to readable format
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  if (loading && !earnings) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mystical-pink mx-auto mb-4"></div>
+          <p className="font-playfair text-white">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-playfair text-red-400 mb-4">{error}</p>
+          <button
+            onClick={loadReaderData}
+            className="btn-mystical"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: '📊' },
@@ -200,27 +247,37 @@ const ReaderDashboard = () => {
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">💰</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Today</h3>
-            <p className="font-alex-brush text-2xl text-mystical-pink">${earnings.today}</p>
+            <p className="font-alex-brush text-2xl text-mystical-pink">
+              ${earnings?.today?.toFixed(2) || '0.00'}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">📊</div>
-            <h3 className="font-playfair text-lg text-white font-semibold">This Week</h3>
-            <p className="font-alex-brush text-2xl text-mystical-pink">${earnings.week}</p>
+            <h3 className="font-playfair text-lg text-white font-semibold">This Period</h3>
+            <p className="font-alex-brush text-2xl text-mystical-pink">
+              ${earnings?.period?.toFixed(2) || '0.00'}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">📈</div>
-            <h3 className="font-playfair text-lg text-white font-semibold">This Month</h3>
-            <p className="font-alex-brush text-2xl text-mystical-pink">${earnings.month}</p>
+            <h3 className="font-playfair text-lg text-white font-semibold">Total Sessions</h3>
+            <p className="font-alex-brush text-2xl text-mystical-pink">
+              {stats?.totalSessions || 0}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">⏳</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Pending</h3>
-            <p className="font-alex-brush text-2xl text-mystical-gold">${earnings.pending}</p>
+            <p className="font-alex-brush text-2xl text-mystical-gold">
+              ${earnings?.pending?.toFixed(2) || '0.00'}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">🏆</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Total Earned</h3>
-            <p className="font-alex-brush text-2xl text-mystical-pink">${earnings.total.toLocaleString()}</p>
+            <p className="font-alex-brush text-2xl text-mystical-pink">
+              ${earnings?.total?.toLocaleString() || '0'}
+            </p>
           </div>
         </div>
 
@@ -283,20 +340,28 @@ const ReaderDashboard = () => {
                   <div key={session.id} className="flex items-center justify-between p-4 bg-gray-800 bg-opacity-50 rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="text-2xl">
-                        {session.type === 'video' ? '📹' : session.type === 'audio' ? '🎧' : '💬'}
+                        {(() => {
+                          if (session.sessionType === 'video') {
+                            return '📹';
+                          }
+                          if (session.sessionType === 'audio') {
+                            return '🎧';
+                          }
+                          return '💬';
+                        })()}
                       </div>
                       <div>
-                        <h4 className="font-playfair text-white font-semibold">{session.clientName}</h4>
+                        <h4 className="font-playfair text-white font-semibold">{session.client.name}</h4>
                         <p className="font-playfair text-gray-300 text-sm">
-                          {session.duration} • {new Date(session.date).toLocaleDateString()}
+                          {formatDuration(session.duration)} • {new Date(session.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-playfair text-mystical-gold font-semibold">${session.amount}</p>
+                      <p className="font-playfair text-mystical-gold font-semibold">${session.readerEarnings?.toFixed(2)}</p>
                       <div className="flex items-center space-x-1">
                         {[...Array(5)].map((_, i) => (
-                          <span key={i} className={i < session.rating ? 'text-yellow-400' : 'text-gray-600'}>
+                          <span key={`session-${session.id}-star-${i}`} className={i < (session.rating || 0) ? 'text-yellow-400' : 'text-gray-600'}>
                             ⭐
                           </span>
                         ))}
@@ -317,29 +382,46 @@ const ReaderDashboard = () => {
                 <div key={session.id} className="flex items-center justify-between p-6 bg-gray-800 bg-opacity-50 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="text-3xl">
-                      {session.type === 'video' ? '📹' : session.type === 'audio' ? '🎧' : '💬'}
+                      {(() => {
+                        if (session.sessionType === 'video') {
+                          return '📹';
+                        }
+                        if (session.sessionType === 'audio') {
+                          return '🎧';
+                        }
+                        return '💬';
+                      })()}
                     </div>
                     <div>
-                      <h4 className="font-playfair text-xl text-white font-semibold">{session.clientName}</h4>
+                      <h4 className="font-playfair text-xl text-white font-semibold">{session.client.name}</h4>
                       <p className="font-playfair text-gray-300">
-                        Duration: {session.duration} • {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString()}
+                        Duration: {formatDuration(session.duration)} • {new Date(session.createdAt).toLocaleDateString()} at {new Date(session.createdAt).toLocaleTimeString()}
                       </p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                        session.status === 'completed' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
-                      }`}>
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${(() => {
+                        if (session.status === 'completed') {
+                          return 'bg-green-600 text-white';
+                        }
+                        if (session.status === 'active') {
+                          return 'bg-blue-600 text-white';
+                        }
+                        if (session.status === 'pending') {
+                          return 'bg-yellow-600 text-white';
+                        }
+                        return 'bg-gray-600 text-white';
+                      })()}`}>
                         {session.status}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-playfair text-mystical-gold font-semibold text-xl">${session.amount}</p>
+                    <p className="font-playfair text-mystical-gold font-semibold text-xl">${session.readerEarnings?.toFixed(2)}</p>
                     <div className="flex items-center space-x-1 mt-2">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < session.rating ? 'text-yellow-400' : 'text-gray-600'}>
+                        <span key={`session-history-${session.id}-star-${i}`} className={i < (session.rating || 0) ? 'text-yellow-400' : 'text-gray-600'}>
                           ⭐
                         </span>
                       ))}
-                      <span className="font-playfair text-gray-300 ml-2">({session.rating}/5)</span>
+                      <span className="font-playfair text-gray-300 ml-2">({session.rating || 'N/A'}/5)</span>
                     </div>
                   </div>
                 </div>

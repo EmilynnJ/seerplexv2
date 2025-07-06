@@ -1,68 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { adminAPI } from '../../utils/api';
 
-interface ReaderApplication {
-  id: number;
-  name: string;
+interface Reader {
+  _id: string;
   email: string;
-  specialties: string[];
-  experience: string;
-  status: string;
-  appliedDate: string;
+  profile: {
+    name: string;
+    bio: string;
+    specialties: string[];
+    rating: number;
+    totalReviews: number;
+  };
+  readerSettings: {
+    rates: {
+      video: number;
+      audio: number;
+      chat: number;
+    };
+    isOnline: boolean;
+  };
+  isActive: boolean;
+  createdAt: string;
+  stats?: {
+    totalSessions: number;
+    totalEarnings: number;
+    averageRating: number;
+  };
+}
+
+interface AdminStats {
+  users: {
+    clients: number;
+    readers: number;
+    admins: number;
+    activeClients: number;
+    activeReaders: number;
+  };
+  sessions: {
+    totalSessions: number;
+    totalRevenue: number;
+    averageRating: number;
+  };
+  transactions: {
+    totalTransactions: number;
+    totalAmount: number;
+  };
+  recentActivity: any[];
 }
 const AdminDashboard = () => {
-  const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
-  const [readerApplications, setReaderApplications] = useState<ReaderApplication[]>([]);
-  const [analytics, setAnalytics] = useState({
-    totalUsers: 0,
-    activeReaders: 0,
-    totalSessions: 0,
-    revenue: 0
+  const [readers, setReaders] = useState<Reader[]>([]);
+  const [analytics, setAnalytics] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newReaderForm, setNewReaderForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    bio: '',
+    specialties: [] as string[],
+    rates: { video: 3.99, audio: 2.99, chat: 1.99 }
   });
+  const [showCreateReader, setShowCreateReader] = useState(false);
 
-  // Mock data - replace with actual API calls
+  // Load data
   useEffect(() => {
-    setAnalytics({
-      totalUsers: 2847,
-      activeReaders: 42,
-      totalSessions: 1529,
-      revenue: 25840.50
-    });
-
-    setReaderApplications([
-      {
-        id: 1,
-        name: "Sarah Crystal",
-        email: "sarah@example.com",
-        specialties: ["Tarot", "Crystal Healing"],
-        experience: "5 years",
-        status: "pending",
-        appliedDate: "2024-01-15"
-      },
-      {
-        id: 2,
-        name: "Michael Star",
-        email: "michael@example.com",
-        specialties: ["Astrology", "Numerology"],
-        experience: "8 years",
-        status: "pending",
-        appliedDate: "2024-01-14"
-      }
-    ]);
+    loadDashboardData();
   }, []);
 
-  const handleApproveReader = (readerId: number) => {
-    console.log(`Approved reader with ID: ${readerId}`);
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsResponse, readersResponse] = await Promise.all([
+        adminAPI.getStats(),
+        adminAPI.getReaders({ limit: 50 })
+      ]);
+      
+      setAnalytics(statsResponse.data.stats);
+      setReaders(readersResponse.data.readers);
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to load dashboard data');
+      console.error('Dashboard load error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRejectReader = (readerId: number) => {
-    console.log(`Rejected reader with ID: ${readerId}`);
+  const handleCreateReader = async () => {
+    try {
+      setLoading(true);
+      await adminAPI.createReader(newReaderForm);
+      setShowCreateReader(false);
+      setNewReaderForm({
+        name: '',
+        email: '',
+        password: '',
+        bio: '',
+        specialties: [],
+        rates: { video: 3.99, audio: 2.99, chat: 1.99 }
+      });
+      await loadDashboardData(); // Reload data
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to create reader');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCreateReader = () => {
-    console.log('Create new reader profile');
+  const handleToggleReaderStatus = async (readerId: string, isActive: boolean) => {
+    try {
+      await adminAPI.updateReader(readerId, { isActive: !isActive });
+      await loadDashboardData(); // Reload data
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to update reader status');
+    }
   };
+
+  const handleProcessPayouts = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.processPayouts();
+      alert(`Processed ${response.data.results.filter((r: any) => r.status === 'success').length} payouts successfully`);
+      await loadDashboardData(); // Reload data
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to process payouts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !analytics) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mystical-pink mx-auto mb-4"></div>
+          <p className="font-playfair text-white">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-playfair text-red-400 mb-4">{error}</p>
+          <button
+            onClick={loadDashboardData}
+            className="btn-mystical"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: '📊' },
@@ -92,22 +184,30 @@ const AdminDashboard = () => {
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">👥</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Total Users</h3>
-            <p className="font-alex-brush text-3xl text-mystical-pink">{analytics.totalUsers.toLocaleString()}</p>
+            <p className="font-alex-brush text-3xl text-mystical-pink">
+              {analytics ? (analytics.users.clients + analytics.users.readers + analytics.users.admins).toLocaleString() : '0'}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">🔮</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Active Readers</h3>
-            <p className="font-alex-brush text-3xl text-mystical-pink">{analytics.activeReaders}</p>
+            <p className="font-alex-brush text-3xl text-mystical-pink">
+              {analytics?.users.activeReaders || 0}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">💬</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Total Sessions</h3>
-            <p className="font-alex-brush text-3xl text-mystical-pink">{analytics.totalSessions.toLocaleString()}</p>
+            <p className="font-alex-brush text-3xl text-mystical-pink">
+              {analytics?.sessions.totalSessions.toLocaleString() || '0'}
+            </p>
           </div>
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">💰</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Revenue</h3>
-            <p className="font-alex-brush text-3xl text-mystical-pink">${analytics.revenue.toLocaleString()}</p>
+            <p className="font-alex-brush text-3xl text-mystical-pink">
+              ${analytics?.sessions.totalRevenue.toLocaleString() || '0'}
+            </p>
           </div>
         </div>
 
@@ -176,53 +276,64 @@ const AdminDashboard = () => {
 
         {activeTab === 'readers' && (
           <div className="space-y-8">
-            {/* Reader Applications */}
+            {/* Reader Management */}
             <div className="card-mystical">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-alex-brush text-3xl text-mystical-pink">Reader Applications</h2>
+                <h2 className="font-alex-brush text-3xl text-mystical-pink">Reader Management</h2>
                 <button
                   className="btn-mystical"
-                  onClick={handleCreateReader}
+                  onClick={() => setShowCreateReader(true)}
                 >
                   Create Reader Profile
                 </button>
               </div>
               
               <div className="space-y-4">
-                {readerApplications.map((application) => (
-                  <div key={application.id} className="bg-gray-800 bg-opacity-50 rounded-lg p-6">
+                {readers.map((reader) => (
+                  <div key={reader._id} className="bg-gray-800 bg-opacity-50 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="font-playfair text-xl text-white font-semibold mb-2">
-                          {application.name}
+                          {reader.profile.name || 'Unnamed Reader'}
                         </h3>
-                        <p className="font-playfair text-gray-300 mb-2">{application.email}</p>
+                        <p className="font-playfair text-gray-300 mb-2">{reader.email}</p>
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {application.specialties.map((specialty, index) => (
+                          {reader.profile.specialties?.map((specialty) => (
                             <span
-                              key={index}
+                              key={`${reader._id}-${specialty}`}
                               className="bg-mystical-pink text-white px-3 py-1 rounded-full text-sm"
                             >
                               {specialty}
                             </span>
                           ))}
                         </div>
-                        <p className="font-playfair text-gray-400 text-sm">
-                          Experience: {application.experience} | Applied: {new Date(application.appliedDate).toLocaleDateString()}
-                        </p>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <p className="font-playfair text-gray-400">
+                            Rating: {reader.profile.rating?.toFixed(1) || 'N/A'} ⭐
+                          </p>
+                          <p className="font-playfair text-gray-400">
+                            Sessions: {reader.stats?.totalSessions || 0}
+                          </p>
+                          <p className="font-playfair text-gray-400">
+                            Earnings: ${reader.stats?.totalEarnings?.toFixed(2) || '0.00'}
+                          </p>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            reader.readerSettings.isOnline ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
+                          }`}>
+                            {reader.readerSettings.isOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex space-x-3">
                         <button
-                          onClick={() => handleApproveReader(application.id)}
-                          className="bg-green-600 text-white px-4 py-2 rounded font-playfair font-semibold hover:bg-green-700 transition-colors"
+                          onClick={() => handleToggleReaderStatus(reader._id, reader.isActive)}
+                          className={`px-4 py-2 rounded font-playfair font-semibold transition-colors ${
+                            reader.isActive
+                              ? 'bg-red-600 text-white hover:bg-red-700'
+                              : 'bg-green-600 text-white hover:bg-green-700'
+                          }`}
                         >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleRejectReader(application.id)}
-                          className="bg-red-600 text-white px-4 py-2 rounded font-playfair font-semibold hover:bg-red-700 transition-colors"
-                        >
-                          Reject
+                          {reader.isActive ? 'Deactivate' : 'Activate'}
                         </button>
                       </div>
                     </div>
@@ -230,6 +341,59 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
+
+            {/* Create Reader Modal */}
+            {showCreateReader && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-mystical-darkBlue border border-mystical-purple rounded-lg p-8 max-w-md w-full mx-4">
+                  <h3 className="font-alex-brush text-3xl text-mystical-pink mb-6">Create New Reader</h3>
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      className="input-mystical w-full"
+                      value={newReaderForm.name}
+                      onChange={(e) => setNewReaderForm({...newReaderForm, name: e.target.value})}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      className="input-mystical w-full"
+                      value={newReaderForm.email}
+                      onChange={(e) => setNewReaderForm({...newReaderForm, email: e.target.value})}
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="input-mystical w-full"
+                      value={newReaderForm.password}
+                      onChange={(e) => setNewReaderForm({...newReaderForm, password: e.target.value})}
+                    />
+                    <textarea
+                      placeholder="Bio"
+                      className="input-mystical w-full h-24"
+                      value={newReaderForm.bio}
+                      onChange={(e) => setNewReaderForm({...newReaderForm, bio: e.target.value})}
+                    />
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={handleCreateReader}
+                        className="btn-mystical flex-1"
+                        disabled={!newReaderForm.name || !newReaderForm.email || !newReaderForm.password}
+                      >
+                        Create Reader
+                      </button>
+                      <button
+                        onClick={() => setShowCreateReader(false)}
+                        className="bg-gray-700 text-white px-4 py-2 rounded font-playfair hover:bg-gray-600 flex-1"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -244,11 +408,15 @@ const AdminDashboard = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="font-playfair text-gray-300">Platform Revenue (30%)</span>
-                      <span className="font-playfair text-mystical-gold">${(analytics.revenue * 0.3).toLocaleString()}</span>
+                      <span className="font-playfair text-mystical-gold">
+                        ${analytics ? ((analytics.sessions.totalRevenue * 0.3).toLocaleString()) : '0'}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-playfair text-gray-300">Reader Payouts (70%)</span>
-                      <span className="font-playfair text-mystical-gold">${(analytics.revenue * 0.7).toLocaleString()}</span>
+                      <span className="font-playfair text-mystical-gold">
+                        ${analytics ? ((analytics.sessions.totalRevenue * 0.7).toLocaleString()) : '0'}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-playfair text-gray-300">Pending Payouts</span>
@@ -277,7 +445,13 @@ const AdminDashboard = () => {
               </div>
               
               <div className="flex space-x-4">
-                <button className="btn-mystical">Process Payouts</button>
+                <button
+                  className="btn-mystical"
+                  onClick={handleProcessPayouts}
+                  disabled={loading}
+                >
+                  {loading ? 'Processing...' : 'Process Payouts'}
+                </button>
                 <button className="bg-gray-700 text-white px-6 py-3 rounded font-playfair font-semibold hover:bg-gray-600 transition-colors">
                   Export Financial Report
                 </button>
