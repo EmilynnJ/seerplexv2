@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const LiveStream = () => {
@@ -18,16 +17,16 @@ const LiveStream = () => {
 
   const fetchStreamsData = async () => {
     try {
-      const [liveRes, upcomingRes, featuredRes] = await Promise.all([
-        axios.get('/api/streams/live'),
-        axios.get('/api/streams/upcoming'),
-        axios.get('/api/streams/featured')
-      ]);
-      setLiveStreams(liveRes.data.streams || liveRes.data);
-      setUpcomingStreams(upcomingRes.data.streams || upcomingRes.data);
-      setFeaturedStreams(featuredRes.data.streams || featuredRes.data);
+      // TODO: Implement streams endpoints in the server
+      // For now, return empty arrays to prevent 404 errors
+      setLiveStreams([]);
+      setUpcomingStreams([]);
+      setFeaturedStreams([]);
     } catch (error) {
       console.error('Failed to fetch stream data:', error);
+      setLiveStreams([]);
+      setUpcomingStreams([]);
+      setFeaturedStreams([]);
     } finally {
       setLoading(false);
     }

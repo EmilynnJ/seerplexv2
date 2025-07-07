@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { messageAPI } from '../utils/api';
 
 const Messages = () => {
   const { user } = useUser();
@@ -20,10 +20,11 @@ const Messages = () => {
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/messages/conversations');
-      setConversations(response.data.conversations);
+      const response = await messageAPI.getConversations();
+      setConversations(response.data.conversations || []);
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
+      setConversations([]);
     } finally {
       setLoading(false);
     }
@@ -41,10 +42,11 @@ const Messages = () => {
 
       try {
         setLoadingMessages(true);
-        const response = await axios.get(`/api/messages/conversation/${activeConversationId}`);
-        setMessages(response.data.messages);
+        const response = await messageAPI.getConversationMessages(activeConversationId);
+        setMessages(response.data.messages || []);
       } catch (error) {
         console.error(`Failed to fetch messages for ${activeConversationId}:`, error);
+        setMessages([]);
       } finally {
         setLoadingMessages(false);
       }
@@ -66,7 +68,7 @@ const Messages = () => {
     const receiverId = activeConversation.otherParticipant.id;
 
     try {
-      const response = await axios.post('/api/messages/send', {
+      const response = await messageAPI.sendMessage({
         receiverId,
         content: newMessage.trim(),
       });

@@ -69,6 +69,9 @@ export const adminAPI = {
   // Financial management
   getRevenue: (period = '30d') => api.get(`/admin/revenue?period=${period}`),
   processPayouts: () => api.post('/admin/payouts/process'),
+
+  // Product management
+  syncStripeProducts: () => api.post('/admin/products/sync'),
 };
 
 // Reader API Services
@@ -108,6 +111,25 @@ export const clientAPI = {
   // Balance management (will integrate with Stripe)
   addFunds: (amount) => api.post('/stripe/add-funds', { amount }),
   getBalance: () => api.get('/users/balance'),
+
+  // Product API calls
+  getProducts: () => api.get('/products'),
+  getProduct: (productId) => api.get(`/products/${productId}`),
+};
+
+// Message API Services
+export const messageAPI = {
+  // Get conversations list
+  getConversations: () => api.get('/messages/conversations'),
+  
+  // Get messages in a conversation
+  getConversationMessages: (conversationId) => api.get(`/messages/conversation/${conversationId}`),
+  
+  // Send a message
+  sendMessage: (messageData) => api.post('/messages/send', messageData),
+  
+  // Mark messages as read
+  markAsRead: (conversationId) => api.patch(`/messages/conversation/${conversationId}/read`),
 };
 
 // General API Services
