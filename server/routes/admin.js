@@ -281,15 +281,27 @@ router.get('/sessions', async (req, res) => {
     // Build query
     const query = {};
     
-    if (status) query.status = status;
-    if (sessionType) query.sessionType = sessionType;
-    if (readerId) query.readerId = readerId;
-    if (clientId) query.clientId = clientId;
+    if (status) {
+      query.status = status;
+    }
+    if (sessionType) {
+      query.sessionType = sessionType;
+    }
+    if (readerId) {
+      query.readerId = readerId;
+    }
+    if (clientId) {
+      query.clientId = clientId;
+    }
     
     if (startDate || endDate) {
       query.createdAt = {};
-      if (startDate) query.createdAt.$gte = new Date(startDate);
-      if (endDate) query.createdAt.$lte = new Date(endDate);
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.createdAt.$lte = new Date(endDate);
+      }
     }
 
     const sessions = await Session.find(query)
@@ -337,7 +349,9 @@ router.get('/users', async (req, res) => {
     // Build query
     const query = {};
     
-    if (role) query.role = role;
+    if (role) {
+      query.role = role;
+    }
     
     if (status === 'active') {
       query.isActive = true;
