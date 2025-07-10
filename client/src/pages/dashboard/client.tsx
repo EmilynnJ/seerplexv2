@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+// import { useUser } from '@clerk/clerk-react'; // Will use passed user prop
 import { useNavigate } from 'react-router-dom';
 import { clientAPI } from '../../utils/api';
+import { UserResource } from '@clerk/types'; // Import Clerk User type
+
+interface ClientDashboardProps {
+  user: UserResource | null;
+}
 
 // Type Definitions
 interface Session {
@@ -55,8 +60,7 @@ interface Order {
   status: 'completed' | 'shipped' | 'pending';
 }
 
-const ClientDashboard = () => {
-  const { user } = useUser();
+const ClientDashboard: React.FC<ClientDashboardProps> = ({ user }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [balance, setBalance] = useState(0);
@@ -82,12 +86,15 @@ const ClientDashboard = () => {
         clientAPI.getStats()
       ]);
       
+      const balanceResponse = await clientAPI.getBalance();
+
       setOnlineReaders(readersResponse.data.readers);
       setSessions(sessionsResponse.data.sessions);
       setStats(statsResponse.data.stats);
-      setBalance(125.75); // Mock balance for now
+      setBalance(balanceResponse.data.balance);
       
       // Mock favorite readers (subset of online readers)
+      // This should ideally come from a user-specific API endpoint
       setFavoriteReaders(readersResponse.data.readers.slice(0, 3));
       
       // Mock recent orders
@@ -209,10 +216,10 @@ const ClientDashboard = () => {
           <div className="card-mystical text-center">
             <div className="text-4xl mb-2">💰</div>
             <h3 className="font-playfair text-lg text-white font-semibold">Account Balance</h3>
-            <p className="font-alex-brush text-3xl text-mystical-pink">${balance.toFixed(2)}</p>
+            <p className="font-alex-brush text-3xl text-mystical-pink">${balance !== undefined && balance !== null ? balance.toFixed(2) : '0.00'}</p>
             <button
               className="btn-mystical mt-4 text-sm py-2"
-              onClick={handleAddFunds}
+              onClick={() => alert("Add Funds: This feature requires Stripe integration for payment processing. (Placeholder)")}
             >
               Add Funds
             </button>

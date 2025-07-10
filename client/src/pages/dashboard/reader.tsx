@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+// import { useUser } from '@clerk/clerk-react'; // Will use passed user prop
 import { readerAPI } from '../../utils/api';
+import { UserResource } from '@clerk/types'; // Import Clerk User type
+
+interface ReaderDashboardProps {
+  user: UserResource | null;
+}
 
 interface Session {
   id: string;
@@ -46,8 +51,7 @@ interface Notification {
   urgent: boolean;
 }
 
-const ReaderDashboard = () => {
-  const { user } = useUser();
+const ReaderDashboard: React.FC<ReaderDashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isOnline, setIsOnline] = useState(false);
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
@@ -62,10 +66,57 @@ const ReaderDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // State for editable profile fields
+  const [profileForm, setProfileForm] = useState({
+    bio: '',
+    specialties: [] as string[], // Will be stored as string for input, then converted
+    avatarUrl: '',
+  });
+  const [specialtiesInput, setSpecialtiesInput] = useState(''); // For comma-separated input
+
+  // State for editable rates
+  const [editableRates, setEditableRates] = useState({
+    video: 0,
+    audio: 0,
+    chat: 0,
+  });
+
+
   // Load data
   useEffect(() => {
     loadReaderData();
   }, []);
+
+  // Effect to update form when user or stats data is available
+  useEffect(() => {
+    if (user) {
+      setProfileForm(prev => ({
+        ...prev,
+        bio: (user.publicMetadata?.bio as string || user.unsafeMetadata?.bio as string || ''),
+        // Specialties and avatarUrl will be set from stats or another source if not in Clerk user metadata
+        avatarUrl: user.imageUrl || '', // Clerk typically provides imageUrl
+      }));
+      // Initialize online status from Clerk's metadata or a fetched source
+      setIsOnline(user.publicMetadata?.isOnline as boolean || stats?.isOnline || false);
+    }
+    if (stats?.profile) { // Assuming stats might contain detailed profile
+        setProfileForm(prev => ({
+            ...prev,
+            bio: stats.profile.bio || prev.bio,
+            specialties: stats.profile.specialties || [],
+            // avatarUrl: stats.profile.avatarUrl || prev.avatarUrl, // If API provides it
+        }));
+        setSpecialtiesInput((stats.profile.specialties || []).join(', '));
+    }
+    if (stats?.readerSettings?.rates) { // Assuming stats contains rates
+        setEditableRates(stats.readerSettings.rates);
+    } else if (user?.publicMetadata?.rates) { // Fallback to clerk metadata
+        setEditableRates(user.publicMetadata.rates as {video: number, audio: number, chat: number});
+    }
+
+
+  }, [user, stats]);
+
 
   const loadReaderData = async () => {
     try {
@@ -121,12 +172,38 @@ const ReaderDashboard = () => {
     }
   };
 
+  const handleProfileUpdate = async () => {
+    try {
+      setLoading(true);
+      const profileData = {
+        bio: profileForm.bio,
+        specialties: specialtiesInput.split(',').map(s => s.trim()).filter(s => s),
+        avatarUrl: profileForm.avatarUrl, // Assuming API can take a URL
+        // name, email are usually part of Clerk user management directly
+      };
+      await readerAPI.updateProfile(profileData);
+      alert('Profile updated successfully!');
+      // Optionally, re-fetch data or update local state if API doesn't return full updated user/stats
+      loadReaderData();
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Failed to update profile');
+      alert(`Error updating profile: ${err.response?.data?.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateRates = async () => {
     try {
-      await readerAPI.updateRates(rates);
+      setLoading(true);
+      await readerAPI.updateRates(editableRates); // Use editableRates state
       alert('Rates updated successfully!');
+      loadReaderData(); // Re-fetch to confirm update
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to update rates');
+      alert(`Error updating rates: ${err.response?.data?.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,7 +251,7 @@ const ReaderDashboard = () => {
     { id: 'earnings', name: 'Earnings', icon: '💰' },
     { id: 'profile', name: 'Profile Settings', icon: '👤' },
     { id: 'schedule', name: 'Availability', icon: '📅' },
-    { id: 'reviews', name: 'Reviews', icon: '⭐' }
+    { id: 'reviews', name: 'Client Reviews', icon: '⭐' }
   ];
 
   return (
@@ -304,32 +381,49 @@ const ReaderDashboard = () => {
           <div className="space-y-8">
             {/* Current Rates */}
             <div className="card-mystical">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-alex-brush text-3xl text-mystical-pink">Your Current Rates</h2>
-                <button
-                  className="btn-mystical"
-                  onClick={handleUpdateRates}
-                >
-                  Update Rates
-                </button>
+              <h2 className="font-alex-brush text-3xl text-mystical-pink mb-6">Your Current Rates</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                <div>
+                  <label htmlFor="rateVideo" className="block text-sm font-medium text-gray-300 mb-1">Video Rate/min</label>
+                  <input
+                    type="number"
+                    id="rateVideo"
+                    step="0.01"
+                    value={editableRates.video}
+                    onChange={(e) => setEditableRates(prev => ({...prev, video: parseFloat(e.target.value) || 0}))}
+                    className="input-mystical w-full"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rateAudio" className="block text-sm font-medium text-gray-300 mb-1">Audio Rate/min</label>
+                  <input
+                    type="number"
+                    id="rateAudio"
+                    step="0.01"
+                    value={editableRates.audio}
+                    onChange={(e) => setEditableRates(prev => ({...prev, audio: parseFloat(e.target.value) || 0}))}
+                    className="input-mystical w-full"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rateChat" className="block text-sm font-medium text-gray-300 mb-1">Chat Rate/min</label>
+                  <input
+                    type="number"
+                    id="rateChat"
+                    step="0.01"
+                    value={editableRates.chat}
+                    onChange={(e) => setEditableRates(prev => ({...prev, chat: parseFloat(e.target.value) || 0}))}
+                    className="input-mystical w-full"
+                  />
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center bg-gray-800 bg-opacity-50 rounded-lg p-6">
-                  <div className="text-4xl mb-3">📹</div>
-                  <h4 className="font-playfair text-xl text-white font-semibold mb-2">Video Call</h4>
-                  <p className="font-alex-brush text-3xl text-mystical-gold">${rates.video}/min</p>
-                </div>
-                <div className="text-center bg-gray-800 bg-opacity-50 rounded-lg p-6">
-                  <div className="text-4xl mb-3">🎧</div>
-                  <h4 className="font-playfair text-xl text-white font-semibold mb-2">Audio Call</h4>
-                  <p className="font-alex-brush text-3xl text-mystical-gold">${rates.audio}/min</p>
-                </div>
-                <div className="text-center bg-gray-800 bg-opacity-50 rounded-lg p-6">
-                  <div className="text-4xl mb-3">💬</div>
-                  <h4 className="font-playfair text-xl text-white font-semibold mb-2">Live Chat</h4>
-                  <p className="font-alex-brush text-3xl text-mystical-gold">${rates.chat}/min</p>
-                </div>
-              </div>
+              <button
+                className="btn-mystical"
+                onClick={handleUpdateRates}
+                disabled={loading}
+              >
+                {loading ? 'Saving Rates...' : 'Save Rates'}
+              </button>
             </div>
 
             {/* Recent Sessions */}
@@ -485,34 +579,54 @@ const ReaderDashboard = () => {
             <h2 className="font-alex-brush text-3xl text-mystical-pink mb-6">Profile Settings</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Bio and Specialties */}
               <div>
-                <h3 className="font-playfair text-xl text-white font-semibold mb-4">Specialties</h3>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {['Tarot', 'Astrology', 'Crystal Healing', 'Medium'].map((specialty) => (
-                    <span key={specialty} className="bg-mystical-pink text-white px-3 py-1 rounded-full text-sm">
-                      {specialty}
-                    </span>
-                  ))}
+                <div className="mb-6">
+                  <label htmlFor="readerBio" className="block font-playfair text-xl text-white font-semibold mb-2">Your Bio</label>
+                  <textarea
+                    id="readerBio"
+                    className="input-mystical w-full h-32"
+                    placeholder="Tell clients about your gifts and experience..."
+                    value={profileForm.bio}
+                    onChange={(e) => setProfileForm(prev => ({...prev, bio: e.target.value}))}
+                  />
                 </div>
-                
-                <h3 className="font-playfair text-xl text-white font-semibold mb-4">Bio</h3>
-                <textarea
-                  className="input-mystical w-full h-32 mb-4"
-                  placeholder="Tell clients about your gifts and experience..."
-                  defaultValue="I am a gifted psychic reader with over 10 years of experience in tarot, astrology, and spiritual guidance. I'm here to help you find clarity on your path."
-                />
+
+                <div className="mb-6">
+                  <label htmlFor="readerSpecialties" className="block font-playfair text-xl text-white font-semibold mb-2">Your Specialties</label>
+                  <input
+                    type="text"
+                    id="readerSpecialties"
+                    className="input-mystical w-full"
+                    placeholder="Comma-separated (e.g., Tarot, Astrology)"
+                    value={specialtiesInput}
+                    onChange={(e) => setSpecialtiesInput(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Enter specialties separated by commas.</p>
+                </div>
               </div>
               
+              {/* Right Column: Avatar and Contact */}
               <div>
-                <h3 className="font-playfair text-xl text-white font-semibold mb-4">Profile Photo</h3>
-                <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-4xl">👤</span>
+                <div className="mb-6">
+                  <label htmlFor="readerAvatarUrl" className="block font-playfair text-xl text-white font-semibold mb-2">Profile Photo URL</label>
+                  {profileForm.avatarUrl && (
+                    <img src={profileForm.avatarUrl} alt="Current avatar" className="w-32 h-32 rounded-full mx-auto mb-2 object-cover"/>
+                  )}
+                  <input
+                    type="text"
+                    id="readerAvatarUrl"
+                    className="input-mystical w-full"
+                    placeholder="Enter URL for your profile photo"
+                    value={profileForm.avatarUrl}
+                    onChange={(e) => setProfileForm(prev => ({...prev, avatarUrl: e.target.value}))}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Enter a direct URL to your image. (Direct upload not supported in this version).
+                  </p>
                 </div>
-                <button className="btn-mystical w-full mb-6">
-                  Upload New Photo
-                </button>
                 
-                <h3 className="font-playfair text-xl text-white font-semibold mb-4">Contact Preferences</h3>
+                <h3 className="font-playfair text-xl text-white font-semibold mb-4">Contact Preferences (Placeholder)</h3>
                 <div className="space-y-3">
                   <label className="flex items-center space-x-3">
                     <input type="checkbox" className="rounded" defaultChecked />
@@ -531,10 +645,67 @@ const ReaderDashboard = () => {
             </div>
             
             <div className="flex space-x-4 mt-8">
-              <button className="btn-mystical">Save Changes</button>
-              <button className="bg-gray-700 text-white px-6 py-3 rounded font-playfair font-semibold hover:bg-gray-600 transition-colors">
+              <button
+                className="btn-mystical"
+                onClick={handleProfileUpdate}
+                disabled={loading}
+              >
+                {loading ? 'Saving Profile...' : 'Save Profile Changes'}
+              </button>
+              <button
+                type="button" // Ensure it doesn't submit if inside a form elsewhere
+                onClick={() => {
+                  // Optionally reset form to originally loaded data
+                  if (user) {
+                     setProfileForm({
+                        bio: (user.publicMetadata?.bio as string || user.unsafeMetadata?.bio as string || ''),
+                        specialties: user.publicMetadata?.specialties as string[] || user.unsafeMetadata?.specialties as string[] || [],
+                        avatarUrl: user.imageUrl || '',
+                     });
+                     setSpecialtiesInput((user.publicMetadata?.specialties as string[] || user.unsafeMetadata?.specialties as string[] || []).join(', '));
+                  }
+                }}
+                className="bg-gray-700 text-white px-6 py-3 rounded font-playfair font-semibold hover:bg-gray-600 transition-colors"
+              >
                 Cancel
               </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'schedule' && (
+          <div className="card-mystical">
+            <h2 className="font-alex-brush text-3xl text-mystical-pink mb-6">Manage Your Availability (Placeholder)</h2>
+            <p className="font-playfair text-gray-300 mb-4">
+              This section will allow you to set your available hours, block off time, and manage your schedule for readings.
+              Full calendar integration and API endpoints for saving availability are needed.
+            </p>
+            <div className="bg-gray-800 bg-opacity-50 rounded-lg p-6">
+              <h4 className="font-playfair text-lg text-white font-semibold mb-2">Example: Weekly Schedule</h4>
+              <p className="font-playfair text-gray-400">Monday: 9 AM - 5 PM</p>
+              <p className="font-playfair text-gray-400">Tuesday: Not Available</p>
+              <p className="font-playfair text-gray-400">Wednesday: 1 PM - 8 PM</p>
+              <button className="btn-mystical mt-4">Edit Schedule (Placeholder)</button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="card-mystical">
+            <h2 className="font-alex-brush text-3xl text-mystical-pink mb-6">Client Reviews (Placeholder)</h2>
+            <p className="font-playfair text-gray-300 mb-4">
+              Here you'll see reviews and feedback from your clients.
+              Backend API to fetch reviews specific to this reader and UI for displaying them are needed.
+            </p>
+            <div className="bg-gray-800 bg-opacity-50 rounded-lg p-6 space-y-3">
+              <div>
+                <p className="font-playfair text-white">"Amazing reading! So insightful." - Client Jane D. (5 ⭐)</p>
+                <p className="font-playfair text-gray-400 text-sm">Oct 20, 2023</p>
+              </div>
+              <div>
+                <p className="font-playfair text-white">"Provided much-needed clarity. Thank you!" - Client John S. (4 ⭐)</p>
+                <p className="font-playfair text-gray-400 text-sm">Oct 18, 2023</p>
+              </div>
             </div>
           </div>
         )}

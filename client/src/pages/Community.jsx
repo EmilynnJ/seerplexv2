@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Forum from '../components/forum/Forum'; // Import the Forum component
 
 const Community = () => {
   const navigate = useNavigate();
@@ -124,10 +125,17 @@ const Community = () => {
           </div>
         </div>
 
+        {/* Forum Section */}
+        <section className="mb-16">
+          <div className="bg-gray-800 bg-opacity-70 p-6 sm:p-8 rounded-lg shadow-xl">
+            <Forum />
+          </div>
+        </section>
+
         {/* Community Features */}
         <section className="mb-16">
           <h2 className="font-alex-brush text-4xl text-mystical-pink text-center mb-12">
-            Community Features
+            Other Community Features
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
