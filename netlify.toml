@@ -3,6 +3,9 @@
   publish = "client/dist"
   functions = "netlify/functions"
 
+[context.production]
+  branch = "main"
+
 [dev]
   command = "npm run dev"
   port = 8888
