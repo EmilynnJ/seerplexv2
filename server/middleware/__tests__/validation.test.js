@@ -34,8 +34,9 @@ describe('validateEmail', () => {
     expect(result.message).toBe('Please provide a valid email address');
   });
 });
-
-describe('validatePassword', () => {
+    expect(result.isValid).toBe(true);
+    expect(result.message).toBeUndefined();
+  });
   test('rejects too short password', () => {
     const result = validatePassword('12345');
     expect(result.isValid).toBe(false);
