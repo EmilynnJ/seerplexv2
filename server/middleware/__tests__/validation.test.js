@@ -11,6 +11,28 @@ describe('validateEmail', () => {
     const result = validateEmail('user@example.com');
     expect(result.isValid).toBe(true);
   });
+
+  test('rejects empty string', () => {
+    const result = validateEmail('');
+    expect(result.isValid).toBe(false);
+    expect(result.message).toBe('Please provide a valid email address');
+  });
+
+  test('accepts email with subdomain', () => {
+    const result = validateEmail('user@mail.example.com');
+    expect(result.isValid).toBe(true);
+  });
+
+  test('accepts email with special characters', () => {
+    const result = validateEmail('user+tag@example.com');
+    expect(result.isValid).toBe(true);
+  });
+
+  test('rejects email with leading/trailing whitespace', () => {
+    const result = validateEmail('  user@example.com  ');
+    expect(result.isValid).toBe(false);
+    expect(result.message).toBe('Please provide a valid email address');
+  });
 });
 
 describe('validatePassword', () => {
