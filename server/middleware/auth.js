@@ -1,21 +1,28 @@
-const jwt = require('jsonwebtoken');
+const { getAuth, clerkClient } = require('@clerk/express');
 const User = require('../models/User');
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ message: 'No token provided, authorization denied' });
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Find user and check if still active
-    const user = await User.findById(decoded.userId).select('-password');
-    
+    let user = await User.findOne({ clerkId: userId }).select('-password');
+
     if (!user) {
-      return res.status(401).json({ message: 'Token is not valid - user not found' });
+      const clerkUser = await clerkClient.users.getUser(userId);
+      const email = clerkUser?.primaryEmailAddress?.emailAddress;
+      user = await User.create({
+        clerkId: userId,
+        email,
+        role: 'client'
+      });
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
     }
 
     if (!user.isActive) {
@@ -29,7 +36,8 @@ const authMiddleware = async (req, res, next) => {
     req.user = {
       userId: user._id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      clerkId: user.clerkId
     };
     
     req.userDoc = user; // Full user document if needed
@@ -38,15 +46,7 @@ const authMiddleware = async (req, res, next) => {
   } catch (error) {
     console.error('Auth middleware error:', error);
     
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ message: 'Token is not valid' });
-    }
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Token has expired' });
-    }
-    
-    res.status(500).json({ message: 'Server error in authentication' });
+    res.status(401).json({ message: 'Invalid authentication token' });
   }
 };
 
@@ -85,27 +85,22 @@ const requireReaderOrAdmin = requireRole(['reader', 'admin']);
 // Optional auth middleware (doesn't fail if no token)
 const optionalAuth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
+    const { userId } = getAuth(req);
+    if (!userId) {
       return next();
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
-    
+    const user = await User.findOne({ clerkId: userId }).select('-password');
     if (user && user.isActive) {
       req.user = {
         userId: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        clerkId: user.clerkId
       };
       req.userDoc = user;
     }
-    
     next();
   } catch (error) {
-    // Silently continue without auth
     next();
   }
 };
