@@ -10,6 +10,7 @@ describe('validateEmail', () => {
   test('accepts valid email', () => {
     const result = validateEmail('user@example.com');
     expect(result.isValid).toBe(true);
+    expect(result.message).toBeUndefined();
   });
 
   test('rejects empty string', () => {
