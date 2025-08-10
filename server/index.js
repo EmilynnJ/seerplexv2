@@ -156,6 +156,7 @@ io.on('connection', (socket) => {
 
 // Make io available to routes
 app.set('io', io);
+app.set('userSockets', userSockets);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

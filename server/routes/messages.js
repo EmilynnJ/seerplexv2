@@ -45,10 +45,11 @@ router.post('/send', authMiddleware, validateMessage, async (req, res) => {
     // Populate sender info for response
     await message.populate('senderId', 'profile.name profile.avatar role');
 
-    // Emit real-time message via socket.io
+    // Emit real-time message via socket.io to sender and receiver
     const io = req.app.get('io');
-    if (io) {
-      io.emit('new-message', {
+    const userSockets = req.app.get('userSockets');
+    if (io && userSockets) {
+      const payload = {
         receiverId,
         message: {
           id: message._id,
@@ -62,6 +63,12 @@ router.post('/send', authMiddleware, validateMessage, async (req, res) => {
             role: message.senderId.role
           },
           createdAt: message.createdAt
+        }
+      };
+      [senderId, receiverId].forEach(uid => {
+        const socketId = userSockets.get(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit('new-message', payload);
         }
       });
     }
@@ -298,14 +305,21 @@ router.patch('/:messageId/edit', authMiddleware, async (req, res) => {
 
     await message.editContent(content.trim());
 
-    // Emit real-time update via socket.io
+    // Emit real-time update via socket.io to both participants
     const io = req.app.get('io');
-    if (io) {
-      io.emit('message-edited', {
+    const userSockets = req.app.get('userSockets');
+    if (io && userSockets) {
+      const payload = {
         messageId: message._id,
         conversationId: message.conversationId,
         newContent: message.content,
         editedAt: message.editedAt
+      };
+      [message.senderId, message.receiverId].forEach(uid => {
+        const socketId = userSockets.get(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit('message-edited', payload);
+        }
       });
     }
 
@@ -345,12 +359,19 @@ router.delete('/:messageId', authMiddleware, async (req, res) => {
 
     await message.softDelete(userId);
 
-    // Emit real-time update via socket.io
+    // Emit real-time update via socket.io to both participants
     const io = req.app.get('io');
-    if (io) {
-      io.emit('message-deleted', {
+    const userSockets = req.app.get('userSockets');
+    if (io && userSockets) {
+      const payload = {
         messageId: message._id,
         conversationId: message.conversationId
+      };
+      [message.senderId, message.receiverId].forEach(uid => {
+        const socketId = userSockets.get(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit('message-deleted', payload);
+        }
       });
     }
 
@@ -392,15 +413,22 @@ router.post('/:messageId/reaction', authMiddleware, async (req, res) => {
 
     await message.addReaction(userId, emoji);
 
-    // Emit real-time update via socket.io
+    // Emit real-time update via socket.io to both participants
     const io = req.app.get('io');
-    if (io) {
-      io.emit('message-reaction', {
+    const userSockets = req.app.get('userSockets');
+    if (io && userSockets) {
+      const payload = {
         messageId: message._id,
         conversationId: message.conversationId,
         userId,
         emoji,
         reactions: message.reactions
+      };
+      [message.senderId, message.receiverId].forEach(uid => {
+        const socketId = userSockets.get(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit('message-reaction', payload);
+        }
       });
     }
 
@@ -432,14 +460,21 @@ router.delete('/:messageId/reaction', authMiddleware, async (req, res) => {
 
     await message.removeReaction(userId);
 
-    // Emit real-time update via socket.io
+    // Emit real-time update via socket.io to both participants
     const io = req.app.get('io');
-    if (io) {
-      io.emit('message-reaction-removed', {
+    const userSockets = req.app.get('userSockets');
+    if (io && userSockets) {
+      const payload = {
         messageId: message._id,
         conversationId: message.conversationId,
         userId,
         reactions: message.reactions
+      };
+      [message.senderId, message.receiverId].forEach(uid => {
+        const socketId = userSockets.get(uid.toString());
+        if (socketId) {
+          io.to(socketId).emit('message-reaction-removed', payload);
+        }
       });
     }
 
