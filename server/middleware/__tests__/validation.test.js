@@ -1,4 +1,4 @@
-const { validateEmail, validatePassword } = require('../validation');
+const { validateEmail, validatePassword } = require('../validation.js');
 
 describe('validateEmail', () => {
   test('rejects malformed email', () => {
